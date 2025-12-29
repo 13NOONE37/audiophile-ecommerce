@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+@import './brand/theme.css';
+
+@layer components {
+  .heading-1 {
+    @apply font-manrope font-bold text-[36px] leading-[40px] tracking-[1.3px];
+
+    @media (min-width: theme('screens.md')) {
+      @apply text-[56px] leading-[58px] tracking-[2px];
+    }
+  }
+  .heading-2 {
+    @apply font-manrope font-bold text-[28px] leading-[38px] tracking-[1px];
+
+    @media (min-width: theme('screens.md')) {
+      @apply text-[40px] leading-[44px] tracking-[1.5px];
+    }
+  }
+  .heading-3 {
+    @apply font-manrope font-bold text-[24px] leading-[36px] tracking-[0.86px];
+
+    @media (min-width: theme('screens.md')) {
+      @apply text-[32px] leading-[36px] tracking-[1.15px];
+    }
+  }
+  .heading-4 {
+    @apply font-manrope font-bold text-[28px] leading-[38px] tracking-[2px];
+  }
+  .heading-5 {
+    @apply font-manrope font-bold  text-[24px] leading-[33px] tracking-[1.7px];
+  }
+  .heading-6 {
+    @apply font-manrope font-black text-[15px] leading-[20px] tracking-[1.07px]; /* 24px, 32px */
+
+    @media (min-width: theme('screens.lg')) {
+      @apply text-[18px] leading-[24px] tracking-[1.3px];
+    }
+  }
+  .content-text {
+    @apply font-manrope font-normal text-[15px] leading-[25px];
+  }
+  .subtitle-text {
+    @apply font-manrope font-bold text-[13px] leading-[25px] tracking-[1px];
+  }
+
+  .overline-text {
+    @apply font-manrope font-bold text-[14px] leading-[19px] tracking-[10px];
+  }
+}
