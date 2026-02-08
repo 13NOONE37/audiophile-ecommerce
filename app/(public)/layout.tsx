@@ -22,7 +22,7 @@ export default function PublicLayout({
 }) {
   return (
     <div
-      className={`${manrope.variable} antialiased min-h-[100vh] grid grid-rows-[auto_1fr_auto]`}
+      className={`${manrope.variable} antialiased relative min-h-[100vh] grid grid-rows-[auto_1fr_auto]`}
     >
       <Header />
       <main className='max-w-(--max-width) mx-auto px-6 md:px-10'>

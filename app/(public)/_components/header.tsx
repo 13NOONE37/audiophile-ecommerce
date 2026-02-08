@@ -3,27 +3,45 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Logo from '@/public/images/shared/desktop/logo.svg';
 import IconHamburger from '@/icons/IconHamburger';
-import { useRef, useState } from 'react';
+import { MouseEvent, useEffect, useRef, useState } from 'react';
 import IconCart from '@/icons/IconCart';
 import Categories from './categories';
+import { cn } from '@/lib/utils';
+import { UseDetectOutsideClick } from '@/hooks/UseDetectOutsideClick';
 
-//todo scroll behaviour on down and on top
 export default function Header() {
-  const [showMenu, setshowMenu] = useState(false);
-  const menuRef = useRef(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLElement | null>(null);
+  const hamburgerRef = useRef(null);
+  const handleHamburger = (e: MouseEvent<HTMLButtonElement>) => {
+    setIsMenuOpen((prev) => !prev);
+  };
+  UseDetectOutsideClick(menuRef, () => {
+    setIsMenuOpen(false);
+  }, [hamburgerRef]);
+
+  //? Code for blocking scroll while displaying menu
+  // useEffect(() => {
+  //   if (isMenuOpen) {
+  //     document.body.classList.add('overflow-y-hidden', 'lg:overflow-y-auto');
+  //   } else {
+  //     document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
+  //   }
+
+  //   return () => {
+  //     document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
+  //   };
+  // }, [isMenuOpen]);
+
   return (
     <>
-      <header className='bg-surface-card-dark px-6 md:px-10 '>
+      <header className='bg-surface-card-dark px-6 md:px-10 z-1000'>
         <div className='max-w-[var(--max-width)] mx-auto grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
           <button
             className='cursor-pointer lg:hidden'
             aria-label={'Open navigation'}
-            onClick={(e) => {
-              // e.stopPropagation();
-              // toggleCart(false);
-              // toggleMenu(!showMenu);
-              setshowMenu((prev) => !prev);
-            }}
+            onClick={handleHamburger}
+            ref={hamburgerRef}
           >
             <IconHamburger className='fill-body-inverted' />
           </button>
@@ -67,7 +85,7 @@ export default function Header() {
             <button
               className='cursor-pointer'
               // className={cx(styles.cart, {
-              //   [styles.cart__disabled]: showMenu,
+              //   [styles.cart__disabled]: isMenuOpen,
               // })}
               aria-label={'Open cart'}
               // onClick={(e) => {
@@ -81,13 +99,14 @@ export default function Header() {
         </div>
       </header>
       <div
-      // className={cx(styles.mobileNavigationContainer, {
-      //   [styles['mobileNavigationContainer__show']]: showMenu,
-      // })}
+        className={cn(
+          'absolute w-full bottom-0 top-[91px] z-999 collapse overflow-auto transition-all duration-75 ease-in lg:hidden',
+          isMenuOpen ? 'bg-body/40 visible' : 'hidden',
+        )}
       >
         <nav
-          // className={styles.mobileNavigation}
-          aria-hidden={showMenu}
+          // className={cn('lg:hidden', isMenuOpen ? 'visible' : 'hidden')}
+          aria-hidden={isMenuOpen}
           ref={menuRef}
         >
           <Categories />
@@ -103,19 +122,19 @@ export default function Header() {
       </FocusTrap>
 
       <FocusTrap
-        active={showMenu}
+        active={isMenuOpen}
         focusTrapOptions={{
           allowOutsideClick: true,
         }}
       >
         <div
           className={cx(styles.mobileNavigationContainer, {
-            [styles['mobileNavigationContainer__show']]: showMenu,
+            [styles['mobileNavigationContainer__show']]: isMenuOpen,
           })}
         >
           <nav
             className={styles.mobileNavigation}
-            aria-hidden={showMenu}
+            aria-hidden={isMenuOpen}
             ref={menuRef}
           >
             <Categories className={styles.categories} />
@@ -147,14 +166,14 @@ export default function Header() {
 // const Header: FC<HeaderProps> = ({ className = [] }) => {
 //   const cart = useContext(CartContext);
 
-//   const [showMenu, setShowMenu] = useState(false);
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
 //   const [showCart, setShowCart] = useState(false);
 
 //   const menuRef = useRef<HTMLDivElement>(null);
 //   const cartRef = useRef<HTMLDivElement>(null);
 
 //   const toggleMenu = (force: boolean) => {
-//     setShowMenu(force);
+//     setIsMenuOpen(force);
 //   };
 //   const toggleCart = (force: boolean) => {
 //     setShowCart(force);
@@ -173,7 +192,7 @@ export default function Header() {
 //             onClick={(e) => {
 //               e.stopPropagation();
 //               toggleCart(false);
-//               toggleMenu(!showMenu);
+//               toggleMenu(!isMenuOpen);
 //             }}
 //           >
 //             <IconHamburger />
@@ -207,7 +226,7 @@ export default function Header() {
 //             )}
 //             <button
 //               className={cx(styles.cart, {
-//                 [styles.cart__disabled]: showMenu,
+//                 [styles.cart__disabled]: isMenuOpen,
 //               })}
 //               aria-label={'Open cart'}
 //               onClick={(e) => {
@@ -230,19 +249,19 @@ export default function Header() {
 //       </FocusTrap>
 
 //       <FocusTrap
-//         active={showMenu}
+//         active={isMenuOpen}
 //         focusTrapOptions={{
 //           allowOutsideClick: true,
 //         }}
 //       >
 //         <div
 //           className={cx(styles.mobileNavigationContainer, {
-//             [styles['mobileNavigationContainer__show']]: showMenu,
+//             [styles['mobileNavigationContainer__show']]: isMenuOpen,
 //           })}
 //         >
 //           <nav
 //             className={styles.mobileNavigation}
-//             aria-hidden={showMenu}
+//             aria-hidden={isMenuOpen}
 //             ref={menuRef}
 //           >
 //             <Categories className={styles.categories} />

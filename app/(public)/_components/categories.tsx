@@ -9,8 +9,13 @@ import { cn } from '@/lib/utils';
 
 const Categories = ({ className }: { className?: string }) => {
   return (
-    <section className={cn('px-6 md:px-9.5', className)}>
-      <div className='flex flex-col justify-start items-center md:grid md:grid-cols-[1fr_1fr_1fr] gap-17 md:gap-2.5 lg:gap-7.5 max-w-[var(--max-width)] mx-auto'>
+    <section
+      className={cn(
+        'bg-body-inverted px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17',
+        className,
+      )}
+    >
+      <div className='flex flex-col justify-start items-center md:grid md:grid-cols-[1fr_1fr_1fr] gap-17 md:gap-2.5 max-w-[var(--max-width)] mx-auto'>
         <Card
           src={HeadphonesImage}
           alt={'Headphones'}
@@ -44,20 +49,15 @@ const Card: FC<{
   return (
     <Link
       href={href}
-      className=' relative
-    w-full 
-    aspect-auto-[327/165]
-    md:aspect-auto-[223/165]
-    lg:aspect-auto-[350/204]
-    bg-surface-card rounded-[10px]
+      className='relative
+      bg-surface-card rounded-[10px]
+    w-full md:w-auto
     flex flex-col justify-end items-center
-    gap-4.25
-    pb-5.5
+    gap-4.25 lg:gap-3.75
+    pb-5.5 lg:pb-7.5 
+    pt-22
     no-underline outline-none
-    group
-    md:max-w-none
-    lg:gap-3.75
-    lg:pb-7.5 '
+    group'
     >
       <div
         className=' absolute left-1/2 top-0
@@ -66,9 +66,10 @@ const Card: FC<{
     transition-all duration-300 ease-in-out
     group-hover:-translate-y-[35%]
     group-focus:-translate-y-[35%]
-    lg:h-[204px]'
+    lg:h-[204px]
+    '
       >
-        <Image src={src} alt={alt} className='h-full w-auto' />
+        <Image src={src} alt={alt} className='h-full w-full object-contain' />
       </div>
       <span className='heading-6 text-body uppercase'>{name}</span>
       <span
