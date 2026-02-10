@@ -9,7 +9,7 @@ import Categories from './categories';
 import { cn } from '@/lib/utils';
 import { UseDetectOutsideClick } from '@/hooks/UseDetectOutsideClick';
 
-export default function Header() {
+export default function Header({ className }: { className?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLElement | null>(null);
   const hamburgerRef = useRef(null);
@@ -35,7 +35,9 @@ export default function Header() {
 
   return (
     <>
-      <header className='bg-surface-card-dark px-6 md:px-10 z-1000'>
+      <header
+        className={cn('bg-surface-card-dark px-6 md:px-10 z-1000', className)}
+      >
         <div className='max-w-(--max-width) mx-auto grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
           <button
             className='cursor-pointer lg:hidden'

@@ -39,8 +39,7 @@ const Outro = () => {
         </div>
         <div
           className='flex flex-col items-center lg:items-start
-        mt-10 md:mt-17 lg:mt-0 
-        mb-30 md:mb-24 lg:mb-0'
+        mt-10 md:mt-17 lg:mt-0'
         >
           <h2
             className='heading-2 uppercase text-body 
