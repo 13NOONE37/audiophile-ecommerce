@@ -1,20 +1,23 @@
-import React, { FC } from 'react';
-
-import styles from './outro.module.css';
-
-import ImageMobile from '@/public/images/shared/mobile/image-best-gear.jpg';
-import ImageTablet from '@/public/images/shared/tablet/image-best-gear.jpg';
-import ImageDesktop from '@/public/images/shared/desktop/image-best-gear.jpg';
-import Image, { getImageProps } from 'next/image';
-
+import Image from 'next/image';
 const Outro = () => {
   return (
-    <section className='px-6'>
-      <div className='flex flex-col items-center justify-start mx-auto'>
-        <div className='w-50 relative'>
+    <section className=''>
+      <div
+        className='flex 
+      flex-col lg:flex-row-reverse 
+      items-center 
+      lg:justify-between 
+      lg:gap-31  
+      mx-auto'
+      >
+        <div
+          className='w-full lg:w-135 
+        rounded-lg 
+        overflow-hidden'
+        >
           <picture>
             <source
-              media='(max-width: 640px)'
+              media='(max-width:768px)'
               srcSet='/images/shared/outro/mobile.jpg'
             />
             <source
@@ -25,8 +28,8 @@ const Outro = () => {
             <Image
               src='/images/shared/outro/desktop.jpg'
               alt='Man with headphones on his head propably listening to music.'
-              width={1600}
-              height={900}
+              width={540}
+              height={588}
               placeholder='blur'
               blurDataURL='/images/shared/outro/blur.jpg'
               priority
@@ -34,11 +37,26 @@ const Outro = () => {
             />
           </picture>
         </div>
-        <div className={styles.textBlock}>
-          <h2 className={styles.heading}>
-            Bringing you the <span>best</span> audio gear
+        <div
+          className='flex flex-col items-center lg:items-start
+        mt-10 md:mt-17 lg:mt-0 
+        mb-30 md:mb-24 lg:mb-0'
+        >
+          <h2
+            className='heading-2 uppercase text-body 
+          text-center lg:text-left 
+          max-w-[15ch] md:max-w-[20ch]'
+          >
+            Bringing you the <span className='text-brand-primary'>best</span>{' '}
+            audio gear
           </h2>
-          <p className={styles.text}>
+          <p
+            className='content-text 
+          text-body/50 
+          text-center lg:text-left
+           max-w-(--max-p-width) 
+           mt-8'
+          >
             Located at the heart of New York City, Audiophile is the premier
             store for high end headphones, earphones, speakers, and audio
             accessories. We have a large showroom and luxury demonstration rooms

@@ -25,7 +25,7 @@ export default function PublicLayout({
       className={`${manrope.variable} antialiased relative min-h-screen grid grid-rows-[auto_1fr_auto]`}
     >
       <Header />
-      <main className='max-w-(--max-width) mx-auto px-6 md:px-10'>
+      <main className='max-w-(--max-width) mx-auto px-6 md:px-10 box-content'>
         {children}
       </main>
       <Footer />

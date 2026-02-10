@@ -15,6 +15,8 @@
 
   --max-width: 1110px;
 
+  --max-p-width: 75ch; /*Paragraph*/
+
   /* Colors */
   --color-brand-primary: #d87d4a;
   --color-brand-primary-light: #fbaf85;
