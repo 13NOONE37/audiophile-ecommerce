@@ -9,12 +9,7 @@ import { cn } from '@/lib/utils';
 
 const Categories = ({ className }: { className?: string }) => {
   return (
-    <section
-      className={cn(
-        'bg-body-inverted px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17',
-        className,
-      )}
-    >
+    <section className={cn('bg-body-inverted', className)}>
       <div className='flex flex-col justify-start items-center md:grid md:grid-cols-[1fr_1fr_1fr] gap-17 md:gap-2.5 max-w-[var(--max-width)] mx-auto'>
         <Card
           src={HeadphonesImage}

@@ -99,7 +99,7 @@ export default function Header({ className }: { className?: string }) {
           aria-hidden={isMenuOpen}
           ref={menuRef}
         >
-          <Categories />
+          <Categories className='px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17' />
         </nav>
       </div>
       {/* <FocusTrap
