@@ -21,24 +21,22 @@ export default function Header({ className }: { className?: string }) {
   }, [hamburgerRef]);
 
   //? Code for blocking scroll while displaying menu
-  // useEffect(() => {
-  //   if (isMenuOpen) {
-  //     document.body.classList.add('overflow-y-hidden', 'lg:overflow-y-auto');
-  //   } else {
-  //     document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
-  //   }
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('overflow-y-hidden', 'lg:overflow-y-auto');
+    } else {
+      document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
+    }
 
-  //   return () => {
-  //     document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
-  //   };
-  // }, [isMenuOpen]);
+    return () => {
+      document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
+    };
+  }, [isMenuOpen]);
 
   return (
     <>
-      <header
-        className={cn('bg-surface-card-dark px-6 md:px-10 z-1000', className)}
-      >
-        <div className='max-w-(--max-width) mx-auto grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
+      <header className={cn('bg-surface-card-dark md:px-10 z-50', className)}>
+        <div className='max-w-(--max-width) px-6 md:px-0 mx-auto grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
           <button
             className='cursor-pointer lg:hidden'
             aria-label={'Open navigation'}
@@ -78,23 +76,13 @@ export default function Header({ className }: { className?: string }) {
               </li>
             </ul>
           </nav>
-          <div className=''>
+          <div className='grid place-items-center'>
             {/* {cart.items.length > 0 ? (
               <span className={styles.cartCount}>{cart.items.length}</span>
             ) : (
               ''
             )} */}
-            <button
-              className='cursor-pointer'
-              // className={cx(styles.cart, {
-              //   [styles.cart__disabled]: isMenuOpen,
-              // })}
-              aria-label={'Open cart'}
-              // onClick={(e) => {
-              //   e.stopPropagation();
-              //   toggleCart(!showCart);
-              // }}
-            >
+            <button className='cursor-pointer' aria-label={'Open cart'}>
               <IconCart className='fill-body-inverted' />
             </button>
           </div>
@@ -102,7 +90,7 @@ export default function Header({ className }: { className?: string }) {
       </header>
       <div
         className={cn(
-          'absolute w-full bottom-0 top-[91px] z-999 collapse overflow-auto transition-all duration-75 ease-in lg:hidden',
+          'fixed w-full bottom-0 top-[89px] z-40 collapse overflow-auto transition-all duration-75 ease-in lg:hidden',
           isMenuOpen ? 'bg-body/40 visible' : 'hidden',
         )}
       >
