@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Header from '../../_components/header';
 import styles from './homeHero/homeHero.module.css';
-import { Button } from '@/components/button';
+import { Button, LinkButton } from '@/components/button';
 const Hero = () => {
   //? naprawić overflow - trzeba zmienić strukturę ponieważ aktualnie zasłania nam menu kontekstowe; trzeba będzie prawdopodbnie przenieść background do własnej sekcji która będzie zajmowała 100% przestrzeni i miała overflow hidden a header i teksty będą w osobnych
   //? pozycja bg na ekranach
@@ -49,33 +49,6 @@ export default Hero;
 function HeroContent() {
   return (
     <section className='relative'>
-      {/* <div
-          className='w-full lg:w-135 
-               rounded-lg 
-               overflow-hidden'
-        >
-          <picture>
-            <source
-              media='(max-width:768px)'
-              srcSet='/images/home/hero/mobile.jpg'
-            />
-            <source
-              media='(max-width: 1024px)'
-              srcSet='/images/home/hero/tablet.jpg'
-            />
-
-            <Image
-              src='/images/home/hero/desktop.jpg'
-              alt='Black headphones model - XX99 Mark II Headphones'
-              width={708}
-              height={886}
-              placeholder='blur'
-              blurDataURL='/images/home/hero/blur.jpg'
-              priority
-              // style={{ width: '100%', height: 'auto' }}
-            />
-          </picture>
-        </div> */}
       <div
         className='flex flex-col 
           items-center lg:items-start
@@ -107,9 +80,14 @@ function HeroContent() {
           Experience natural, lifelike audio and exceptional build quality made
           for the passionate music enthusiast.
         </p>
-        <Button variant='primary' className='uppercase mt-7 md:mt-10'>
+        <LinkButton
+          href={'/test'}
+          variant='primary'
+          className='uppercase mt-7 md:mt-10'
+        >
           See product
-        </Button>
+        </LinkButton>
+
         {/* <LinkButton
             style={'primary'}
             href={'/product/xx99-mark-II-headphones'}
