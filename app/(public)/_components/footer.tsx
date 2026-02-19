@@ -27,17 +27,26 @@ export default function Footer() {
               </Link>
             </li>
             <li>
-              <Link href={'/headphones'} className='hover:text-brand-primary'>
+              <Link
+                href={'/category/headphones'}
+                className='hover:text-brand-primary'
+              >
                 Headphones
               </Link>
             </li>
             <li>
-              <Link href={'/speakers'} className='hover:text-brand-primary'>
+              <Link
+                href={'/category/speakers'}
+                className='hover:text-brand-primary'
+              >
                 Speakers
               </Link>
             </li>
             <li>
-              <Link href={'/earphones'} className='hover:text-brand-primary'>
+              <Link
+                href={'/category/earphones'}
+                className='hover:text-brand-primary'
+              >
                 Earphones
               </Link>
             </li>

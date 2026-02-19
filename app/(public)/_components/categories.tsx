@@ -15,19 +15,19 @@ const Categories = ({ className }: { className?: string }) => {
           src={HeadphonesImage}
           alt={'Headphones'}
           name='Headphones'
-          href='/headphones'
+          href='/category/headphones'
         />
         <Card
           src={SpeakersImage}
           alt={'Speakers'}
           name='Speakers'
-          href='/speakers'
+          href='/category/speakers'
         />
         <Card
           src={EarphonesImage}
           alt={'Earphones'}
           name='Earphones'
-          href='/earphones'
+          href='/category/earphones'
         />
       </div>
     </section>

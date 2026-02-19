@@ -81,7 +81,7 @@ function HeroContent() {
           for the passionate music enthusiast.
         </p>
         <LinkButton
-          href={'/test'}
+          href={'/product/product-xx99-mark-two-headphones'}
           variant='primary'
           className='uppercase mt-7 md:mt-10'
         >
