@@ -12,7 +12,7 @@ const Outro = () => {
       >
         <div
           className='w-full lg:w-135 
-        rounded-lg 
+        rounded-[8px] 
         overflow-hidden'
         >
           <picture>
@@ -33,7 +33,7 @@ const Outro = () => {
               placeholder='blur'
               blurDataURL='/images/shared/outro/blur.jpg'
               priority
-              style={{ width: '100%', height: 'auto' }}
+              className='w-full h-auto'
             />
           </picture>
         </div>

@@ -45,7 +45,7 @@ const Card: FC<{
     <Link
       href={href}
       className='relative
-      bg-surface-card rounded-[10px]
+      bg-surface-card rounded-[8px]
     w-full md:w-auto
     flex flex-col justify-end items-center
     gap-4.25 lg:gap-3.75
