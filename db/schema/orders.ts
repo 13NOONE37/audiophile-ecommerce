@@ -1,5 +1,7 @@
 import { numeric, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
+import { relations } from 'drizzle-orm';
+import { orderItems } from './orderItems';
 
 export const orderStatusEnum = pgEnum('order_status', [
   'pending',
@@ -31,3 +33,7 @@ export const orders = pgTable('orders', {
 
   createdAt: createdAt,
 });
+
+export const OrderRelations = relations(orders, ({ one, many }) => ({
+  items: many(orderItems, { relationName: 'order_items' }),
+}));

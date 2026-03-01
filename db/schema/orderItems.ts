@@ -1,6 +1,7 @@
 import { integer, numeric, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { id } from '../schemaHelpers';
 import { orders } from './orders';
+import { relations } from 'drizzle-orm';
 
 export const orderItems = pgTable('order_items', {
   id: id,
@@ -15,3 +16,10 @@ export const orderItems = pgTable('order_items', {
   }).notNull(),
   quantity: integer('quantity').notNull(),
 });
+
+export const OrderItemRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
+  }),
+}));

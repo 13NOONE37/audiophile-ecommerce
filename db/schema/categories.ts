@@ -1,5 +1,7 @@
+import { relations } from 'drizzle-orm';
 import { createdAt, id } from '../schemaHelpers';
 import { index, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { products } from './products';
 
 export const categories = pgTable(
   'categories',
@@ -12,3 +14,7 @@ export const categories = pgTable(
   },
   (table) => [index('categories_slug_idx').on(table.slug)],
 );
+
+export const CategoryRelations = relations(categories, ({ one, many }) => ({
+  products: many(products, { relationName: 'category_products' }),
+}));

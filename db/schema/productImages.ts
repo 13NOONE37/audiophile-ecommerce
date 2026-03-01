@@ -2,6 +2,7 @@ import { integer, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
 import { products } from './products';
 import { productVariants } from './productVariants';
+import { relations } from 'drizzle-orm';
 
 export const imageRoleEnum = pgEnum('image_role', [
   'main',
@@ -30,3 +31,9 @@ export const productImages = pgTable('product_images', {
   position: integer('position').default(0),
   createdAt: createdAt,
 });
+export const ProductImageRelations = relations(productImages, ({ one }) => ({
+  product: one(products, {
+    fields: [productImages.productId],
+    references: [products.id],
+  }),
+}));

@@ -30,12 +30,14 @@ export default async function CategoryPage({
 
   return (
     <div>
-      <h1>{category.name}</h1>
-      {/* <ul>
+      <h1 className='bg-body w-full text-heading-2 text-body-inverted uppercase'>
+        {category.name}
+      </h1>
+      <ul>
         {products.map((product) => (
           <li key={product.id}>{product.name}</li>
         ))}
-      </ul> */}
+      </ul>
     </div>
   );
 }
@@ -66,11 +68,11 @@ async function getProductsForCategory(categoryId: string) {
     },
     where: eq(products.categoryId, categoryId),
     with: {
-      productImages: {
-        where: eq(productImages.position, 0), //Only main photo
+      images: {
+        where: eq(productImages.role, 'main'), //Only main photos
         columns: {
-          alt_text: true,
-          url: true,
+          altText: true,
+          path: true,
         },
       },
     },

@@ -9,6 +9,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
 import { products } from './products';
+import { relations } from 'drizzle-orm';
 
 export const productVariants = pgTable(
   'product_variants',
@@ -27,4 +28,13 @@ export const productVariants = pgTable(
     index('variants_product_idx').on(table.productId),
     index('variants_sku_idx').on(table.sku),
   ],
+);
+export const ProductVariantRelations = relations(
+  productVariants,
+  ({ one }) => ({
+    product: one(products, {
+      fields: [productVariants.productId],
+      references: [products.id],
+    }),
+  }),
 );
