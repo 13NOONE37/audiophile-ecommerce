@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { categories } from '@/db/schema';
+import { categories, productImages, products } from '@/db/schema';
 import { getCategoryIdTag } from '@/features/categories/db/cache';
 import { getCategoryIdProductsTag } from '@/features/products/db/cache';
 import { eq } from 'drizzle-orm';
@@ -56,4 +56,25 @@ async function getCategory(slug: string) {
 async function getProductsForCategory(categoryId: string) {
   'use cache';
   cacheTag(getCategoryIdProductsTag(categoryId));
+
+  const productsList = await db.query.products.findMany({
+    columns: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+    },
+    where: eq(products.categoryId, categoryId),
+    with: {
+      productImages: {
+        where: eq(productImages.position, 0), //Only main photo
+        columns: {
+          alt_text: true,
+          url: true,
+        },
+      },
+    },
+  });
+
+  return productsList;
 }

@@ -15,6 +15,20 @@
       "when": 1772352797991,
       "tag": "0001_illegal_madame_masque",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772358935530,
+      "tag": "0002_loud_maverick",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1772359536799,
+      "tag": "0003_sad_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }
