@@ -13,7 +13,6 @@ import { categories } from './categories';
 import { productImages } from './productImages';
 import { relations } from 'drizzle-orm';
 import { productVariants } from './productVariants';
-import { date } from 'zod';
 
 export const products = pgTable(
   'products',

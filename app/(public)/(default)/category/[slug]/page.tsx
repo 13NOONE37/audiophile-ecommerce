@@ -1,4 +1,5 @@
-import { Button, LinkButton } from '@/components/button';
+import { NewProductBadge } from '@/app/(public)/_components/newProductBadge';
+import { LinkButton } from '@/components/button';
 import { db } from '@/db/db';
 import { categories, productImages, products } from '@/db/schema';
 import { getCategoryIdTag } from '@/features/categories/db/cache';
@@ -30,8 +31,8 @@ export default async function CategoryPage({
   }
 
   const products = await getProductsForCategory(category.id);
-  //TODO add new until functionality (we need to modify database again)
   //TODO add blur field in images but we will be pasting it to database not seperate file a lot of easier to handle
+
   return (
     <>
       <div className='w-full grid place-items-center bg-body py-8 md:pt-21 md:pb-24.5 lg:py-24.5'>
@@ -72,9 +73,10 @@ export default async function CategoryPage({
                 </picture>
               </div>
               <div className='flex flex-col items-center lg:items-start'>
-                <span className='overline-text text-brand-primary font-normal uppercase'>
-                  New product
-                </span>
+                <NewProductBadge
+                  isNew={product.is_new}
+                  newUntil={product.new_until}
+                />
                 <h2 className='heading-2 text-body uppercase mt-6 md:mt-4'>
                   {product.name}
                 </h2>
@@ -119,6 +121,8 @@ async function getProductsForCategory(categoryId: string) {
       id: true,
       slug: true,
       name: true,
+      is_new: true,
+      new_until: true,
       description: true,
     },
     where: and(
