@@ -5,6 +5,7 @@ import {
   jsonb,
   pgTable,
   text,
+  timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
@@ -12,6 +13,7 @@ import { categories } from './categories';
 import { productImages } from './productImages';
 import { relations } from 'drizzle-orm';
 import { productVariants } from './productVariants';
+import { date } from 'zod';
 
 export const products = pgTable(
   'products',
@@ -30,6 +32,8 @@ export const products = pgTable(
     categoryId: uuid('category_id').references(() => categories.id, {
       onDelete: 'set null',
     }),
+    is_new: boolean('is_new').default(false).notNull(),
+    new_until: timestamp('new_until', { withTimezone: true }),
     is_active: boolean('is_active').default(true).notNull(),
     createdAt: createdAt,
     updatedAt: updatedAt,
