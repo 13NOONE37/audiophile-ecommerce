@@ -12,7 +12,8 @@ import { UseDetectOutsideClick } from '@/hooks/UseDetectOutsideClick';
 export default function Header({ className }: { className?: string }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLElement | null>(null);
-  const hamburgerRef = useRef(null);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+
   const handleHamburger = (e: MouseEvent<HTMLButtonElement>) => {
     setIsMenuOpen((prev) => !prev);
   };
@@ -26,6 +27,9 @@ export default function Header({ className }: { className?: string }) {
       document.body.classList.add('overflow-y-hidden', 'lg:overflow-y-auto');
     } else {
       document.body.classList.remove('overflow-y-hidden', 'lg:overflow-y-auto');
+
+      // when menu closes, return focus to the hamburger button
+      hamburgerRef.current?.focus();
     }
 
     return () => {
@@ -103,12 +107,11 @@ export default function Header({ className }: { className?: string }) {
           isMenuOpen ? 'bg-body/40 visible' : 'hidden',
         )}
       >
-        <nav
-          // className={cn('lg:hidden', isMenuOpen ? 'visible' : 'hidden')}
-          aria-hidden={isMenuOpen}
-          ref={menuRef}
-        >
-          <Categories className='px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17' />
+        <nav ref={menuRef}>
+          <Categories
+            className='px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17'
+            onLinkClick={() => setIsMenuOpen(false)}
+          />
         </nav>
       </div>
       {/* <FocusTrap

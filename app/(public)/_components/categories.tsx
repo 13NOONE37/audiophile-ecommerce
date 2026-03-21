@@ -7,7 +7,13 @@ import EarphonesImage from '@/public/images/shared/desktop/image-category-thumbn
 import IconArrowRight from '@/icons/IconArrowRight';
 import { cn } from '@/lib/utils';
 
-const Categories = ({ className }: { className?: string }) => {
+const Categories = ({
+  onLinkClick,
+  className,
+}: {
+  onLinkClick?: () => void;
+  className?: string;
+}) => {
   return (
     <section className={cn('bg-body-inverted', className)}>
       <div className='flex flex-col justify-start items-center md:grid md:grid-cols-[1fr_1fr_1fr] gap-17 md:gap-2.5 max-w-[var(--max-width)] mx-auto'>
@@ -16,18 +22,21 @@ const Categories = ({ className }: { className?: string }) => {
           alt={'Headphones'}
           name='Headphones'
           href='/category/headphones'
+          onLinkClick={onLinkClick}
         />
         <Card
           src={SpeakersImage}
           alt={'Speakers'}
           name='Speakers'
           href='/category/speakers'
+          onLinkClick={onLinkClick}
         />
         <Card
           src={EarphonesImage}
           alt={'Earphones'}
           name='Earphones'
           href='/category/earphones'
+          onLinkClick={onLinkClick}
         />
       </div>
     </section>
@@ -36,11 +45,12 @@ const Categories = ({ className }: { className?: string }) => {
 export default Categories;
 
 const Card: FC<{
+  onLinkClick?: () => void;
   src: StaticImageData;
   alt: string;
   name: string;
   href: string;
-}> = ({ src, alt, name, href }) => {
+}> = ({ onLinkClick, src, alt, name, href }) => {
   return (
     <Link
       href={href}
@@ -53,6 +63,7 @@ const Card: FC<{
     pt-22
     no-underline outline-none
     group'
+      onClick={onLinkClick}
     >
       <div
         className=' absolute left-1/2 top-0

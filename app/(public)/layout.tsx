@@ -22,7 +22,7 @@ export default function PublicLayout({
 }) {
   return (
     <div
-      className={`${manrope.variable} antialiased relative min-h-screen grid grid-rows-[auto_1fr_auto]`}
+      className={`${manrope.variable} antialiased relative min-h-screen grid grid-rows-[auto_1fr_auto] bg-surface-page`}
     >
       {children}
       <Footer />

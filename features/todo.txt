@@ -1,0 +1,1 @@
+Podczas tworzenia panelu musimy zrobić podczas uploadu produktu żeby blurDataURL generowało się samo (użyjemy sharp) oraz samo będzie się dodawać width and height

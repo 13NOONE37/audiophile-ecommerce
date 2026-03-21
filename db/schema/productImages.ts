@@ -29,6 +29,9 @@ export const productImages = pgTable('product_images', {
   role: imageRoleEnum('role').notNull().default('main'),
   type: imageTypeEnum('type').notNull().default('desktop'),
   position: integer('position').default(0),
+  blurDataURL: text('blur_data_url'),
+  width: integer('width'),
+  height: integer('height'),
   createdAt: createdAt,
 });
 export const ProductImageRelations = relations(productImages, ({ one }) => ({

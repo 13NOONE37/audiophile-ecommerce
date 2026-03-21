@@ -26,13 +26,12 @@ export default async function CategoryPage({
   const { slug } = await params;
 
   const category = await getCategory(slug);
-  if (!category) {
-    notFound();
-  }
+  if (!category) notFound();
 
   const products = await getProductsForCategory(category.id);
-  //TODO add blur field in images but we will be pasting it to database not seperate file a lot of easier to handle
 
+  //TODO: Think about extracting max width of component to a tailwind variable, because it's used in multiple places and it would be good to have it consistent across the app. Also, we can use it in the header component to make the menu width consistent with the rest of the app.
+  //TODO: Replace image rendering with real images from database when they are available and add width, height, blur
   return (
     <>
       <div className='w-full grid place-items-center bg-body py-8 md:pt-21 md:pb-24.5 lg:py-24.5'>
@@ -40,61 +39,68 @@ export default async function CategoryPage({
           {category.name}
         </h1>
       </div>
-      <section className='max-w-(--max-width) mx-auto px-6 md:px-10 mt-16 md:mt-30 lg:mt-40 box-content'>
-        <ul className='flex flex-col gap-30 lg:gap-40'>
-          {products.map((product, index) => (
-            <li
-              key={product.id}
-              className={cn(
-                'flex flex-col items-center gap-8 md:gap-13 lg:gap-31',
-                index % 2 == 0 ? 'lg:flex-row' : 'lg:flex-row-reverse',
-              )}
-            >
-              <div className='relative w-full lg:w-[540px] aspect-654/704 md:aspect-[1378/704] lg:aspect-[1080/1120] rounded-[8px] overflow-hidden'>
-                <picture>
-                  <source
-                    media='(max-width: 768px)'
-                    srcSet='/images/products/zx7-speaker/default/mobile/image-category-page-preview.jpg'
-                  />
-                  <source
-                    media='(max-width: 1024px)'
-                    srcSet='/images/products/zx7-speaker/default/tablet/image-category-page-preview.jpg'
-                  />
 
+      {products.length > 0 ? (
+        <section className='max-w-(--max-width) mx-auto px-6 md:px-10 mt-16 md:mt-30 lg:mt-40 box-content'>
+          <ul className='flex flex-col gap-30 lg:gap-40'>
+            {products.map((product, index) => (
+              <li
+                key={product.id}
+                className={cn(
+                  'flex flex-col items-center gap-8 md:gap-13 lg:gap-31',
+                  index % 2 == 0 ? 'lg:flex-row' : 'lg:flex-row-reverse',
+                )}
+              >
+                <div
+                  className='flex justify-center
+                bg-surface-card 
+                w-full lg:w-[540px] 
+                aspect-654/704 md:aspect-[1378/704] lg:aspect-[1080/1120] 
+                rounded-[8px] overflow-hidden'
+                >
                   <Image
-                    src='/images/products/zx7-speaker/default/desktop/image-category-page-preview.jpg'
+                    src='/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
                     alt={''}
-                    fill
+                    width={1080}
+                    height={1120}
                     // placeholder='blur'
                     // blurDataURL='/images/home/bestProducts/zx9-speaker/blur.jpg'
                     priority
-                    className='object-cover'
+                    className='object-fit h-full w-auto'
                   />
-                </picture>
-              </div>
-              <div className='flex flex-col items-center lg:items-start'>
-                <NewProductBadge
-                  isNew={product.is_new}
-                  newUntil={product.new_until}
-                />
-                <h2 className='heading-2 text-body uppercase mt-6 md:mt-4'>
-                  {product.name}
-                </h2>
-                <p className='content-text text-body text-center lg:text-start max-w-[60ch] mt-6 md:mt-8'>
-                  {product.description}
-                </p>
-                <LinkButton
-                  variant='primary'
-                  href={`/product/${product.slug}`}
-                  className='uppercase mt-6 lg:mt-10'
-                >
-                  See product
-                </LinkButton>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+                </div>
+                <div className='flex flex-col items-center lg:items-start'>
+                  <NewProductBadge
+                    isNew={product.is_new}
+                    newUntil={product.new_until}
+                    className='mb-6 md:mb-4'
+                  />
+
+                  <h2 className='heading-2 text-body uppercase text-center lg:text-start  whitespace-pre-wrap'>
+                    {product.name}
+                  </h2>
+                  <p className='content-text text-body text-center lg:text-start max-w-[60ch] mt-6 md:mt-8'>
+                    {product.description}
+                  </p>
+                  <LinkButton
+                    variant='primary'
+                    href={`/product/${product.slug}`}
+                    className='uppercase mt-6 lg:mt-10'
+                  >
+                    See product
+                  </LinkButton>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : (
+        <div className='max-w-(--max-width)box-content grid place-items-center mt-44.5 md:mt-43 lg:mt-60 mx-auto px-6 md:px-10 '>
+          <h2 className='heading-2 text-black text-center'>
+            No products in this category yet
+          </h2>
+        </div>
+      )}
     </>
   );
 }
@@ -134,6 +140,12 @@ async function getProductsForCategory(categoryId: string) {
         where: eq(productImages.role, 'main'), //Only main photos
         columns: {
           altText: true,
+          blurDataURL: true,
+          width: true,
+          height: true,
+          role: true,
+          type: true,
+          position: true,
           path: true,
         },
       },
