@@ -19,7 +19,7 @@ export function Button({
   className,
   ...props
 }: {
-  variant: Variant;
+  variant?: Variant;
 } & ComponentPropsWithoutRef<'button'>) {
   return (
     <button className={cn(baseStyle, variants[variant], className)} {...props}>
@@ -34,7 +34,7 @@ export function LinkButton({
   className,
   ...props
 }: {
-  variant: Variant;
+  variant?: Variant;
 } & ComponentPropsWithoutRef<typeof Link>) {
   return (
     <Link className={cn(baseStyle, variants[variant], className)} {...props}>

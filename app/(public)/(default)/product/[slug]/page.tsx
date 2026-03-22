@@ -1,7 +1,7 @@
 import { db } from '@/db/db';
-import { products } from '@/db/schema';
+import { productRecommendations, products } from '@/db/schema';
 import { getProductIdTag } from '@/features/products/db/cache';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -11,6 +11,7 @@ import { NewProductBadge } from '@/app/(public)/_components/newProductBadge';
 import { formatPrice } from '@/lib/formatters';
 import { ProductGallery } from './_components/productGallery';
 import { CartManagment } from './_components/CartManagment';
+import { YouMayAlsoLike } from './_components/YouMayAlsoLike';
 
 export async function generateStaticParams() {
   const allProducts = await db.query.products.findMany({
@@ -82,8 +83,7 @@ export default async function ProductPage({
         <ProductGallery />
       </div>
       <div className='mt-22 md:mt-30 lg:mt-40'>
-        {/* TODO: Implement "you may also like" section */}
-        <section>you may also like</section>
+        <YouMayAlsoLike recommendations={product.recommendations} />
       </div>
     </div>
   );
@@ -96,6 +96,7 @@ async function getProduct(slug: string) {
       id: true,
       name: true,
       description: true,
+      categoryId: true,
       features: true,
       inTheBox: true,
       is_new: true,
@@ -106,10 +107,55 @@ async function getProduct(slug: string) {
       category: true,
       images: true,
       variants: true,
+      recommendations: {
+        with: {
+          recommended: true,
+        },
+
+        limit: 3,
+        orderBy: [productRecommendations.position],
+      },
     },
   });
 
-  if (!product) return null;
+  // If there is not any variant there is no product - we always need even default one
+  // Category also has to be defined
+  if (!product || product.variants.length == 0 || product.categoryId == null)
+    return null;
+
+  if (product.recommendations.length < 3) {
+    const diff = 3 - product.recommendations.length;
+
+    const recommendedIds = new Set(
+      product.recommendations.map((r) => r.recommendedId),
+    );
+    recommendedIds.add(product.id);
+
+    const additionalProducts = await db.query.products.findMany({
+      where: and(
+        eq(products.categoryId, product.categoryId),
+        eq(products.is_active, true),
+      ),
+      limit: diff + 2,
+    });
+    const filteredAdditional = additionalProducts
+      .filter((p) => !recommendedIds.has(p.id))
+      .slice(0, diff);
+
+    const additionalRecs = filteredAdditional.map((p) => ({
+      id: crypto.randomUUID(),
+      productId: product.id,
+      recommendedId: p.id,
+      position: product.recommendations.length + filteredAdditional.indexOf(p),
+      createdAt: new Date(),
+      recommended: p,
+    }));
+
+    (product.recommendations as any) = [
+      ...product.recommendations,
+      ...additionalRecs,
+    ];
+  }
 
   cacheTag(getProductIdTag(product.id));
 

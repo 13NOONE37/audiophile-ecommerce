@@ -7,4 +7,4 @@ export * from './schema/cartItems';
 export * from './schema/orders';
 export * from './schema/orderItems';
 export * from './schema/payments';
-export * from './schema/productRecomendations';
+export * from './schema/productRecommendations';
