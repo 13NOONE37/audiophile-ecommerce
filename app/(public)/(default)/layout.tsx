@@ -12,7 +12,7 @@ export default function PublicDefaultLayout({
       <main>
         {children}
 
-        <div className='max-w-(--max-width) mx-auto px-6 md:px-10 box-content'>
+        <div className='page-max-width'>
           <div className='mt-44.5 md:mt-43 lg:mt-60'>
             <Categories />
           </div>

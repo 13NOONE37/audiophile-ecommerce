@@ -9,9 +9,7 @@ export default function PublicLandingLayout({
   return (
     <>
       <Hero />
-      <main className='max-w-(--max-width) mx-auto px-6 md:px-10 box-content'>
-        {children}
-      </main>
+      <main className='page-max-width'>{children}</main>
     </>
   );
 }

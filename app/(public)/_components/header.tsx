@@ -40,7 +40,7 @@ export default function Header({ className }: { className?: string }) {
   return (
     <>
       <header className={cn('bg-surface-card-dark md:px-10 z-50', className)}>
-        <div className='max-w-(--max-width) px-6 md:px-0 mx-auto grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
+        <div className='page-max-width md:px-0 grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
           <button
             className='cursor-pointer lg:hidden'
             aria-label={'Open navigation'}

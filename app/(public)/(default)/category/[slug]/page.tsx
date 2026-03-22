@@ -30,7 +30,6 @@ export default async function CategoryPage({
 
   const products = await getProductsForCategory(category.id);
 
-  //TODO: Think about extracting max width of component to a tailwind variable, because it's used in multiple places and it would be good to have it consistent across the app. Also, we can use it in the header component to make the menu width consistent with the rest of the app.
   //TODO: Replace image rendering with real images from database when they are available and add width, height, blur
   return (
     <>
@@ -41,7 +40,7 @@ export default async function CategoryPage({
       </div>
 
       {products.length > 0 ? (
-        <section className='max-w-(--max-width) mx-auto px-6 md:px-10 mt-16 md:mt-30 lg:mt-40 box-content'>
+        <section className='page-max-width mt-16 md:mt-30 lg:mt-40'>
           <ul className='flex flex-col gap-30 lg:gap-40'>
             {products.map((product, index) => (
               <li
@@ -95,7 +94,7 @@ export default async function CategoryPage({
           </ul>
         </section>
       ) : (
-        <div className='max-w-(--max-width)box-content grid place-items-center mt-44.5 md:mt-43 lg:mt-60 mx-auto px-6 md:px-10 '>
+        <div className='page-max-width grid place-items-center mt-44.5 md:mt-43 lg:mt-60'>
           <h2 className='heading-2 text-black text-center'>
             No products in this category yet
           </h2>

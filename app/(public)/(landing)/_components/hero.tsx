@@ -37,7 +37,7 @@ const Hero = () => {
       <Header className='bg-transparent' />
 
       {/* Content⬇️ */}
-      <div className='max-w-(--max-width) mx-auto px-6 md:px-10 box-content relative'>
+      <div className='page-max-width relative'>
         <HeroContent />
       </div>
     </div>

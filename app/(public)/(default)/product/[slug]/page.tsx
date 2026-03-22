@@ -34,7 +34,7 @@ export default async function ProductPage({
   //We do not support variants yet, so we can just take the price from the first variant, but in the future we will need to create state here that will decide which information display depends on variant
   const currentVariantIndex = 0;
   return (
-    <div className='max-w-(--max-width) mx-auto px-6 md:px-10 box-content mt-4 md:mt-8.5 lg:mt-20'>
+    <div className='page-max-width mt-4 md:mt-8.5 lg:mt-20'>
       <Link
         href={product.category ? `/category/${product.category.slug}` : '/'}
         className='content-text text-body/50'
@@ -45,7 +45,7 @@ export default async function ProductPage({
         <div className='md:min-w-[280px] md:aspect-280/480 lg:aspect-auto grid place-items-center rounded-[8px] overflow-hidden bg-surface-card'>
           <Image
             src={
-              '/images/products/zx7-speaker/default/desktop/image-product.jpg'
+              '/images/products/zx7-speaker/default/product/image-product.jpg'
             }
             alt={product.name}
             width={1080}
