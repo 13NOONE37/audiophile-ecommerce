@@ -43,6 +43,13 @@
       "when": 1772536516413,
       "tag": "0005_simple_stardust",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774175836976,
+      "tag": "0006_chilly_nightcrawler",
+      "breakpoints": true
     }
   ]
 }

@@ -8,9 +8,9 @@ import { notFound } from 'next/navigation';
 import { ProductDetails } from './_components/productDetails';
 import Image from 'next/image';
 import { NewProductBadge } from '@/app/(public)/_components/newProductBadge';
-import { Button } from '@/components/button';
 import { formatPrice } from '@/lib/formatters';
 import { ProductGallery } from './_components/productGallery';
+import { CartManagment } from './_components/CartManagment';
 
 export async function generateStaticParams() {
   const allProducts = await db.query.products.findMany({
@@ -67,14 +67,8 @@ export default async function ProductPage({
           <span className='heading-6 text-body text-[18px] mt-6 md:mt-8'>
             {formatPrice(Number(product.variants[currentVariantIndex].price))}
           </span>
-          <div className='flex flex-row justify-start gap-4 mt-8 lg:mt-12'>
-            <Button variant='secondary' className='uppercase'>
-              - 0 +
-            </Button>
-            <Button variant='primary' className='uppercase'>
-              Add to cart
-            </Button>
-          </div>
+
+          <CartManagment />
         </div>
       </section>
       <div className='mt-22 md:mt-30 lg:mt-40'>
