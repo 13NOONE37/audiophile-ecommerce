@@ -16,16 +16,22 @@ export function YouMayAlsoLike({
 }) {
   return (
     <section>
-      <h2 className='heading-3 text-body uppercase'>You may also like</h2>
-      <ul>
+      <h2 className='heading-3 text-body uppercase text-center'>
+        You may also like
+      </h2>
+      <ul
+        className='grid  
+      md:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
+      gap-14 md:gap-3 lg:gap-7.5 
+      mt-10 md:mt-14 lg:mt-16'
+      >
         {recommendations.map((rec) => (
-          <li key={rec.recommended.id}>
+          <li key={rec.recommended.id} className='flex flex-col items-center'>
             <div
               className='flex justify-center
-                            bg-surface-card 
-                            w-full lg:w-[540px] 
-                            aspect-654/704 md:aspect-[1378/704] lg:aspect-[1080/1120] 
-                            rounded-[8px] overflow-hidden'
+              bg-surface-card
+              aspect-[2.725/1] md:aspect-[1/1.426] lg:aspect-[1.10/1] 
+              rounded-[8px] overflow-hidden'
             >
               <Image
                 src='/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
@@ -35,13 +41,15 @@ export function YouMayAlsoLike({
                 // placeholder='blur'
                 // blurDataURL='/images/home/bestProducts/zx9-speaker/blur.jpg'
                 priority
-                className='object-fit h-full w-auto'
+                className='object-contain h-full w-auto'
               />
             </div>
-            {rec.recommended.name}
+            <span className='heading-5 text-body uppercase mt-7.5 md:mt-10'>
+              {rec.recommended.name}
+            </span>
             <LinkButton
               href={`/product/${rec.recommended.slug}`}
-              className='uppercase'
+              className='uppercase mt-7.5'
             >
               See Product
             </LinkButton>
