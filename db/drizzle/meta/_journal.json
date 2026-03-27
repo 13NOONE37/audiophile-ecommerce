@@ -57,6 +57,13 @@
       "when": 1774176273090,
       "tag": "0007_adorable_la_nuit",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1774590674939,
+      "tag": "0008_exotic_nuke",
+      "breakpoints": true
     }
   ]
 }

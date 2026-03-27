@@ -4,8 +4,8 @@ import {
   jsonb,
   numeric,
   pgTable,
-  text,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
 import { products } from './products';
@@ -18,7 +18,7 @@ export const productVariants = pgTable(
     productId: uuid('product_id')
       .notNull()
       .references(() => products.id, { onDelete: 'cascade' }),
-    sku: text('sku').notNull().unique(),
+    sku: varchar('sku', { length: 12 }).notNull().unique(), //We will write it as zx9-II_BLK "_" will be used as separator
     price: numeric('price', { precision: 10, scale: 2 }).notNull(),
     stock: integer('stock').default(0).notNull(),
     attributes: jsonb('attributes'),
