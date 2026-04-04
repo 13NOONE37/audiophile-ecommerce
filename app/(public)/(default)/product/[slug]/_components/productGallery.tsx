@@ -1,6 +1,7 @@
+import { ProductImage, ProductWithImages } from '@/components/ProductImage';
 import Image from 'next/image';
 
-export function ProductGallery() {
+export function ProductGallery({ product }: { product: ProductWithImages }) {
   return (
     <section
       className='aspect-[327/756] md:aspect-[690/368] lg:aspect-[1110/592] 
@@ -14,11 +15,10 @@ export function ProductGallery() {
         col-1 row-1
       rounded-[8px] overflow-hidden'
       >
-        <Image
-          src={
-            '/images/products/zx7-speaker/default/gallery/image-gallery-1.jpg'
-          }
-          alt={''}
+        <ProductImage
+          product={product}
+          role='gallery'
+          position={0}
           fill
           className='object-cover'
         />
@@ -28,12 +28,11 @@ export function ProductGallery() {
         col-1 row-2
       rounded-[8px] overflow-hidden'
       >
-        <Image
-          src={
-            '/images/products/zx7-speaker/default/gallery/image-gallery-2.jpg'
-          }
+        <ProductImage
+          product={product}
+          role='gallery'
+          position={1}
           fill
-          alt={''}
           className='object-cover'
         />
       </div>
@@ -42,12 +41,11 @@ export function ProductGallery() {
         md:col-2 md:row-span-2 
       rounded-[8px] overflow-hidden'
       >
-        <Image
-          src={
-            '/images/products/zx7-speaker/default/gallery/image-gallery-3.jpg'
-          }
+        <ProductImage
+          product={product}
+          role='gallery'
+          position={2}
           fill
-          alt={''}
           className='object-cover'
         />
       </div>

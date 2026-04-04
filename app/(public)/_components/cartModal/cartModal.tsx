@@ -1,13 +1,9 @@
 'use client';
-import React, { ReactNode, forwardRef } from 'react';
+import React, { useState } from 'react';
 import { LinkButton } from '@/components/button';
 import CartItemsDisplay from './cartItemsDisplay';
 import { formatPrice } from '@/lib/formatters';
-
-interface Props {
-  children?: ReactNode;
-  showCart: boolean;
-}
+import { clearCartAction } from '@/features/cart/actions/carts';
 
 const CartModal = ({
   showCart,
@@ -18,11 +14,25 @@ const CartModal = ({
 }) => {
   if (!ref) return null;
 
-  const itemCount = 3;
-  const totalPrice = 49.5;
+  const [itemCount, setItemCount] = useState(0);
+  const [totalPrice, setTotalPrice] = useState(0);
 
-  const handleRemoveAll = () => {
-    // TODO: Implement remove all logic
+  const handleItemsChange = (
+    items: Array<{ quantity: number; price: number }>,
+  ) => {
+    setItemCount(items.reduce((sum, item) => sum + item.quantity, 0));
+    setTotalPrice(
+      items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    );
+  };
+
+  const handleRemoveAll = async () => {
+    const result = await clearCartAction();
+    if (!result.error) {
+      setItemCount(0);
+      setTotalPrice(0);
+      window.dispatchEvent(new Event('cart-updated'));
+    }
   };
 
   return (
@@ -51,7 +61,7 @@ const CartModal = ({
 
         {/* Items */}
         <div className='flex-1 overflow-auto mb-8'>
-          <CartItemsDisplay />
+          <CartItemsDisplay onItemsChange={handleItemsChange} />
         </div>
 
         {/* Summary */}

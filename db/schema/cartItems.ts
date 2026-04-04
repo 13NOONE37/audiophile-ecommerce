@@ -20,6 +20,10 @@ export const cartItems = pgTable(
 );
 
 export const CartItemRelations = relations(cartItems, ({ one, many }) => ({
+  cart: one(carts, {
+    fields: [cartItems.cartId],
+    references: [carts.id],
+  }),
   variant: one(productVariants, {
     fields: [cartItems.variantId],
     references: [productVariants.id],

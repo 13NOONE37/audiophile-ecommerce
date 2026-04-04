@@ -1,13 +1,13 @@
 import { NewProductBadge } from '@/app/(public)/_components/newProductBadge';
+import { ProductImage } from '@/components/ProductImage';
 import { LinkButton } from '@/components/button';
 import { db } from '@/db/db';
-import { categories, productImages, products } from '@/db/schema';
+import { categories, products } from '@/db/schema';
 import { getCategoryIdTag } from '@/features/categories/db/cache';
 import { getCategoryIdProductsTag } from '@/features/products/db/cache';
 import { cn } from '@/lib/utils';
 import { and, eq } from 'drizzle-orm';
 import { cacheTag } from 'next/cache';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
 export async function generateStaticParams() {
@@ -30,7 +30,6 @@ export default async function CategoryPage({
 
   const products = await getProductsForCategory(category.id);
 
-  //TODO: Replace image rendering with real images from database when they are available and add width, height, blur
   return (
     <>
       <div className='w-full grid place-items-center bg-body py-8 md:pt-21 md:pb-24.5 lg:py-24.5'>
@@ -57,14 +56,10 @@ export default async function CategoryPage({
                 aspect-654/704 md:aspect-[1378/704] lg:aspect-[1080/1120] 
                 rounded-[8px] overflow-hidden'
                 >
-                  <Image
-                    src='/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
-                    alt={''}
-                    width={1080}
-                    height={1120}
-                    // placeholder='blur'
-                    // blurDataURL='/images/home/bestProducts/zx9-speaker/blur.jpg'
-                    priority
+                  <ProductImage
+                    product={product}
+                    role='preview'
+                    preload
                     className='object-fit h-full w-auto'
                   />
                 </div>
@@ -136,7 +131,6 @@ async function getProductsForCategory(categoryId: string) {
     ),
     with: {
       images: {
-        where: eq(productImages.role, 'main'), //Only main photos
         columns: {
           altText: true,
           blurDataURL: true,

@@ -1,5 +1,5 @@
 import { db } from '@/db/db';
-import { productRecommendations, products } from '@/db/schema';
+import { productImages, productRecommendations, products } from '@/db/schema';
 import { getProductIdTag } from '@/features/products/db/cache';
 import { and, eq } from 'drizzle-orm';
 import { cacheTag } from 'next/cache';
@@ -12,6 +12,7 @@ import { formatPrice } from '@/lib/formatters';
 import { ProductGallery } from './_components/productGallery';
 import { CartManagment } from './_components/CartManagment';
 import { YouMayAlsoLike } from './_components/YouMayAlsoLike';
+import { ProductImage } from '@/components/ProductImage';
 
 export async function generateStaticParams() {
   const allProducts = await db.query.products.findMany({
@@ -45,14 +46,7 @@ export default async function ProductPage({
       </Link>
       <section className='grid md:grid-cols-[1fr_auto] lg:grid-cols-[540px_1fr] md:place-items-center gap-8 md:gap-17.5 lg:gap-31 mt-6 lg:mt-14'>
         <div className='md:min-w-[280px] md:aspect-280/480 lg:aspect-auto grid place-items-center rounded-[8px] overflow-hidden bg-surface-card'>
-          <Image
-            src={
-              '/images/products/zx7-speaker/default/product/image-product.jpg'
-            }
-            alt={product.name}
-            width={1080}
-            height={1120}
-          />
+          <ProductImage product={product} role='main' preload />
         </div>
         <div className='flex flex-col'>
           <NewProductBadge
@@ -70,7 +64,7 @@ export default async function ProductPage({
             {formatPrice(Number(product.variants[currentVariantIndex].price))}
           </span>
 
-          <CartManagment />
+          <CartManagment variantId={product.variants[currentVariantIndex].id} />
         </div>
       </section>
       <div className='mt-22 md:mt-30 lg:mt-40'>
@@ -81,7 +75,7 @@ export default async function ProductPage({
       </div>
 
       <div className='mt-22 md:mt-30 lg:mt-40'>
-        <ProductGallery />
+        <ProductGallery product={product} />
       </div>
       <div className='mt-22 md:mt-30 lg:mt-40'>
         <YouMayAlsoLike recommendations={product.recommendations} />
@@ -110,7 +104,13 @@ async function getProduct(slug: string) {
       variants: true,
       recommendations: {
         with: {
-          recommended: true,
+          recommended: {
+            with: {
+              images: {
+                where: eq(productImages.role, 'preview'),
+              },
+            },
+          },
         },
 
         limit: 3,
@@ -138,6 +138,11 @@ async function getProduct(slug: string) {
         eq(products.is_active, true),
       ),
       limit: diff + 2,
+      with: {
+        images: {
+          where: eq(productImages.role, 'preview'),
+        },
+      },
     });
     const filteredAdditional = additionalProducts
       .filter((p) => !recommendedIds.has(p.id))

@@ -1,53 +1,72 @@
 'use client';
 
+import {
+  getCartItemsAction,
+  setCartItemQuantityAction,
+} from '@/features/cart/actions/carts';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { formatPrice } from '@/lib/formatters';
 import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
 
 interface CartItem {
   id: string;
-  name: string;
-  image: string;
+  productName: string;
+  short_name?: string;
+  imagePath: string | null;
+  imageAltText: string | null;
   price: number;
   quantity: number;
 }
 
-//TODO add shortname field to database or use sku without dashes; sku max 12 characters
+const CartItemsDisplay = ({
+  onItemsChange,
+}: {
+  onItemsChange?: (items: CartItem[]) => void;
+}) => {
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-const cartItems: CartItem[] = [
-  {
-    id: '1',
-    name: 'XX59 MK II',
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-    price: 89.9,
-    quantity: 1,
-  },
-  {
-    id: '2',
-    name: 'ZX9',
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-    price: 349.9,
-    quantity: 1,
-  },
-  {
-    id: '3',
-    name: 'ZX7',
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-    price: 179.9,
-    quantity: 1,
-  },
-];
+  const loadItems = useCallback(async () => {
+    const items = await getCartItemsAction();
+    setCartItems(items);
+    onItemsChange?.(items);
+  }, [onItemsChange]);
 
-const CartItemsDisplay = () => {
-  const handleDecrease = (id: string) => {
-    // TODO: Implement decrease quantity
-  };
+  useEffect(() => {
+    let mounted = true;
 
-  const handleIncrease = (id: string) => {
-    // TODO: Implement increase quantity
+    const refresh = async () => {
+      if (!mounted) return;
+      await loadItems();
+    };
+
+    const onCartUpdated = () => {
+      void refresh();
+    };
+
+    void refresh();
+    window.addEventListener('cart-updated', onCartUpdated);
+
+    return () => {
+      mounted = false;
+      window.removeEventListener('cart-updated', onCartUpdated);
+    };
+  }, [loadItems]);
+
+  const handleSetQuantity = async (id: string, nextQuantity: number) => {
+    const normalizedQuantity = Math.max(1, Math.floor(nextQuantity));
+    const result = await setCartItemQuantityAction(id, normalizedQuantity);
+
+    if (result.error) return;
+
+    setCartItems((prev) => {
+      const nextItems = prev.map((item) =>
+        item.id === id ? { ...item, quantity: normalizedQuantity } : item,
+      );
+      onItemsChange?.(nextItems);
+      return nextItems;
+    });
+    window.dispatchEvent(new Event('cart-updated'));
   };
 
   return cartItems.length > 0 ? (
@@ -59,8 +78,11 @@ const CartItemsDisplay = () => {
         >
           {/* Image */}
           <Image
-            src={item.image}
-            alt={item.name}
+            src={
+              item.imagePath ??
+              '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
+            }
+            alt={item.imageAltText ?? item.productName}
             width={64}
             height={64}
             sizes='64px'
@@ -69,20 +91,20 @@ const CartItemsDisplay = () => {
 
           {/* Name */}
           <span className='text-sm font-bold uppercase text-black self-end'>
-            {/* TODO: here we display SKU becasuse there is no place for full name */}
-            {item.name}
+            {item.short_name || item.productName}
           </span>
 
           {/* Quantity Controls */}
           <div className='row-span-2 flex items-center justify-center'>
             <QuantitySelectInput
-              value={0}
-              setValue={() => {}}
+              value={item.quantity}
+              setValue={(next) => {
+                const resolved =
+                  typeof next === 'function' ? next(item.quantity) : next;
+                void handleSetQuantity(item.id, resolved);
+              }}
               className='h-8 w-24'
             />
-            {/* <span className='text-xs font-medium bg-gray-200 px-3 py-1 rounded'>
-              {item.quantity}
-            </span> */}
           </div>
 
           {/* Price */}

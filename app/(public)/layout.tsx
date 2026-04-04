@@ -7,7 +7,7 @@ import Footer from './_components/footer';
 const manrope = Manrope({
   variable: '--font-manropeSans',
   subsets: ['latin'],
-  weight: ['700', '500', '400'],
+  weight: ['800', '700', '500', '400'],
 });
 
 export const metadata: Metadata = {

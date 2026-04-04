@@ -64,6 +64,20 @@
       "when": 1774590674939,
       "tag": "0008_exotic_nuke",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1775286158450,
+      "tag": "0009_black_king_bedlam",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775286201971,
+      "tag": "0010_clumsy_jack_flag",
+      "breakpoints": true
     }
   ]
 }

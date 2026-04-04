@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
 import { categories } from './categories';
@@ -20,6 +21,7 @@ export const products = pgTable(
   {
     id: id,
     name: text('name').notNull(),
+    short_name: varchar('short_name', { length: 12 }),
     slug: text('slug').notNull().unique(),
     description: text('description'),
     features: text('features'),

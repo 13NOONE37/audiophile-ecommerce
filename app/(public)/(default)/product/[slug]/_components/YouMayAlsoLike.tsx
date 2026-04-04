@@ -1,12 +1,18 @@
 import { LinkButton } from '@/components/button';
+import { ProductImage, ProductWithImages } from '@/components/ProductImage';
 import { productRecommendations, products } from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
-import Image from 'next/image';
+
+type RecommendedProduct = Pick<
+  InferSelectModel<typeof products>,
+  'id' | 'name' | 'short_name' | 'slug'
+> &
+  ProductWithImages;
 
 type RecommendationWithProduct = InferSelectModel<
   typeof productRecommendations
 > & {
-  recommended: InferSelectModel<typeof products>;
+  recommended: RecommendedProduct;
 };
 
 export function YouMayAlsoLike({
@@ -33,19 +39,14 @@ export function YouMayAlsoLike({
               aspect-[2.725/1] md:aspect-[1/1.426] lg:aspect-[1.10/1] 
               rounded-[8px] overflow-hidden'
             >
-              <Image
-                src='/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
-                alt={''}
-                width={1080}
-                height={1120}
-                // placeholder='blur'
-                // blurDataURL='/images/home/bestProducts/zx9-speaker/blur.jpg'
-                priority
+              <ProductImage
+                product={rec.recommended}
+                role='preview'
                 className='object-contain h-full w-auto'
               />
             </div>
             <span className='heading-5 text-body uppercase mt-7.5 md:mt-10'>
-              {rec.recommended.name}
+              {rec.recommended.short_name || rec.recommended.name}
             </span>
             <LinkButton
               href={`/product/${rec.recommended.slug}`}
