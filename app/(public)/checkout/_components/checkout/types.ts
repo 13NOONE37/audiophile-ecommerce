@@ -12,11 +12,3 @@ export interface CheckoutFormState {
 }
 
 export type FormErrors = Partial<Record<keyof CheckoutFormState, string>>;
-
-export interface CartItem {
-  slug: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}

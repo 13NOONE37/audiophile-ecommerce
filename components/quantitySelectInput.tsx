@@ -5,10 +5,12 @@ import { Dispatch, SetStateAction, useState } from 'react';
 export function QuantitySelectInput({
   value,
   setValue,
+  allowZero = false,
   className,
 }: {
   value: number;
   setValue: Dispatch<SetStateAction<number>>;
+  allowZero?: boolean;
   className?: string;
 }) {
   const [inputValue, setInputValue] = useState(String(value));
@@ -29,13 +31,17 @@ export function QuantitySelectInput({
     setInputValue(raw);
 
     const parsed = Number(raw);
-    if (raw !== '' && !isNaN(parsed)) {
+    if (raw !== '' && !isNaN(parsed) && parsed >= (allowZero ? 0 : 1)) {
       setValue(parsed);
     }
   };
 
   const handleBlur = () => {
-    if (inputValue === '' || isNaN(Number(inputValue))) {
+    if (
+      inputValue === '' ||
+      isNaN(Number(inputValue)) ||
+      Number(inputValue) < (allowZero ? 0 : 1)
+    ) {
       setInputValue(String(value));
     }
   };
@@ -49,7 +55,7 @@ export function QuantitySelectInput({
       <button
         className='text-[#b5b5b5] cursor-pointer transition-all duration-300 ease-in-out hover:text-brand-primary active:text-brand-primary disabled:cursor-default disabled:text-[#b5b5b5] focus:bg-[#d9d9d9] outline-none border-none bg-transparent'
         onClick={handleDecrease}
-        disabled={value <= 1}
+        disabled={value <= (allowZero ? 0 : 1)}
       >
         −
       </button>

@@ -3,7 +3,10 @@ import React, { useState } from 'react';
 import { LinkButton } from '@/components/button';
 import CartItemsDisplay from './cartItemsDisplay';
 import { formatPrice } from '@/lib/formatters';
-import { clearCartAction } from '@/features/cart/actions/carts';
+import {
+  CartItemsWithDetails,
+  clearCartItems,
+} from '@/features/cart/actions/carts';
 
 const CartModal = ({
   showCart,
@@ -17,21 +20,21 @@ const CartModal = ({
   const [itemCount, setItemCount] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
-  const handleItemsChange = (
-    items: Array<{ quantity: number; price: number }>,
-  ) => {
+  const handleItemsChange = (items: CartItemsWithDetails) => {
     setItemCount(items.reduce((sum, item) => sum + item.quantity, 0));
     setTotalPrice(
-      items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      items.reduce(
+        (sum, item) => sum + Number(item.variant.price) * item.quantity,
+        0,
+      ),
     );
   };
 
   const handleRemoveAll = async () => {
-    const result = await clearCartAction();
+    const result = await clearCartItems();
     if (!result.error) {
       setItemCount(0);
       setTotalPrice(0);
-      window.dispatchEvent(new Event('cart-updated'));
     }
   };
 

@@ -10,7 +10,8 @@ import { z } from 'zod';
 import Billing from '../billing/billing';
 import Summary from '../summary/summary';
 import ConfirmationModal from '../confirmation/confirmation-modal';
-import type { CartItem, CheckoutFormState, FormErrors } from './types';
+import type { CheckoutFormState, FormErrors } from './types';
+import { CartItemsWithDetails } from '@/features/cart/actions/carts';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -108,32 +109,6 @@ const checkoutSchema = z
     }
   });
 
-const MOCK_CART_ITEMS: CartItem[] = [
-  {
-    slug: 'xx99-mark-ii',
-    name: 'XX99 MK II',
-    price: 2999,
-    quantity: 1,
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-  },
-  {
-    slug: 'xx59',
-    name: 'XX59',
-    price: 899,
-    quantity: 2,
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-  },
-  {
-    slug: 'yx1',
-    name: 'YX1 WE',
-    price: 599,
-    quantity: 1,
-    image:
-      '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg',
-  },
-];
 const VAT_RATE = 0.2;
 const SHIPPING_COST = 50;
 
@@ -150,15 +125,19 @@ const INITIAL_FORM_STATE: CheckoutFormState = {
   eMoneyPin: '',
 };
 
-export default function CheckoutPage() {
+export default function CheckoutPage({
+  cartItems,
+}: {
+  cartItems: CartItemsWithDetails;
+}) {
   const router = useRouter();
   const [formState, setFormState] =
     useState<CheckoutFormState>(INITIAL_FORM_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const totalPrice = MOCK_CART_ITEMS.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + Number(item.variant.price) * item.quantity,
     0,
   );
   const shippingPrice = totalPrice > 0 ? SHIPPING_COST : 0;
@@ -225,7 +204,7 @@ export default function CheckoutPage() {
           onChange={handleChange}
         />
         <Summary
-          items={MOCK_CART_ITEMS}
+          items={cartItems}
           totalPrice={totalPrice}
           shippingPrice={shippingPrice}
           vatPrice={vatPrice}
@@ -235,7 +214,7 @@ export default function CheckoutPage() {
 
       {showConfirmation && (
         <ConfirmationModal
-          items={MOCK_CART_ITEMS}
+          items={cartItems}
           grandTotalPrice={grandTotalPrice}
           onClose={handleConfirmationClose}
         />

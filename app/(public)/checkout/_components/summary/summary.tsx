@@ -1,11 +1,12 @@
 import Image from 'next/image';
 import { Button } from '@/components/button';
 import { formatPrice } from '@/lib/formatters';
-import type { CartItem } from '../checkout/types';
 import PriceRow from './_components/priceRow';
+import { CartItemsWithDetails } from '@/features/cart/actions/carts';
+import { ProductImage } from '@/components/ProductImage';
 
 interface Props {
-  items: CartItem[];
+  items: CartItemsWithDetails;
   totalPrice: number;
   vatPrice: number;
   shippingPrice: number;
@@ -27,23 +28,24 @@ export default function Summary({
         <ul className='flex flex-col gap-6'>
           {items.map((item) => (
             <li
-              key={item.slug}
+              key={item.variantId}
               className='grid grid-cols-[64px_1fr_auto] gap-4 items-center'
             >
-              <Image
-                src={item.image}
-                alt={item.name}
+              <ProductImage
+                product={item.variant.product}
+                role='cart'
                 width={64}
                 height={64}
                 sizes='64px'
                 className='rounded-[10px]'
               />
+
               <div className='flex flex-col'>
                 <span className='text-sm font-bold uppercase text-black'>
-                  {item.name}
+                  {item.variant.product.short_name}
                 </span>
                 <span className='text-sm font-bold text-black/50'>
-                  {formatPrice(item.price)}
+                  {formatPrice(Number(item.variant.price))}
                 </span>
               </div>
               <span className='text-sm font-bold text-black/50'>

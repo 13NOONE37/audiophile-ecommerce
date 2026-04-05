@@ -5,11 +5,12 @@ import IconOrderConfirmation from '@/icons/IconOrderConfirmation';
 import { Button } from '@/components/button';
 import { formatPrice } from '@/lib/formatters';
 import { UseDetectOutsideClick } from '@/hooks/UseDetectOutsideClick';
-import type { CartItem } from '../checkout/types';
 import { blockBodyScroll, enableBodyScroll } from '@/lib/bodyScroll';
+import { CartItemsWithDetails } from '@/features/cart/actions/carts';
+import { ProductImage } from '@/components/ProductImage';
 
 interface Props {
-  items: CartItem[];
+  items: CartItemsWithDetails;
   grandTotalPrice: number;
   onClose: () => void;
 }
@@ -59,22 +60,22 @@ export default function ConfirmationModal({
               <ul className='flex flex-col gap-4'>
                 {visibleItems.map((item) => (
                   <li
-                    key={item.slug}
+                    key={item.variantId}
                     className='grid grid-cols-[48px_1fr_auto] gap-4 items-center'
                   >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
+                    <ProductImage
+                      product={item.variant.product}
+                      role='cart'
                       width={48}
                       height={48}
-                      className='rounded-[10px]'
                     />
+
                     <div className='flex flex-col'>
                       <span className='text-sm font-bold uppercase text-black'>
-                        {item.name}
+                        {item.variant.product.short_name}
                       </span>
                       <span className='text-xs font-bold text-black/50'>
-                        {formatPrice(item.price)}
+                        {formatPrice(Number(item.variant.price))}
                       </span>
                     </div>
                     <span className='text-sm font-bold text-black/50'>

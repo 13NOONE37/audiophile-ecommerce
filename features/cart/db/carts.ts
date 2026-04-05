@@ -1,21 +1,10 @@
 import { db } from '@/db/db';
 import { cartItems, carts, productImages } from '@/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq } from 'drizzle-orm';
 import { getCartCookie } from '../lib/cookies';
+import { getOrCreateCart } from '../lib/getOrCreateCart';
 
-export type CartListItem = {
-  id: string;
-  cartId: string;
-  variantId: string;
-  quantity: number;
-  productName: string;
-  productSlug: string;
-  price: number;
-  imagePath: string | null;
-  imageAltText: string | null;
-};
-
-export async function getCart() {
+export async function getCartDB() {
   const cartId = await getCartCookie();
   if (!cartId) return null;
 
@@ -23,63 +12,99 @@ export async function getCart() {
     where: eq(carts.id, cartId),
   });
 }
+export async function getCartItemsDB() {
+  const cart = await getCartDB();
+  if (!cart) return null;
 
-export async function getCartItems(): Promise<CartListItem[]> {
-  const existingCart = await getCart();
-  if (!existingCart) return [];
+  const cartId = cart.id;
 
-  const items = await db.query.cartItems.findMany({
-    where: eq(cartItems.cartId, existingCart.id),
+  return db.query.cartItems.findMany({
+    where: eq(cartItems.cartId, cartId),
     with: {
       variant: {
         columns: {
-          id: true,
           price: true,
         },
         with: {
           product: {
             columns: {
+              short_name: true,
               name: true,
-              slug: true,
             },
+
             with: {
               images: {
                 where: and(eq(productImages.role, 'cart')),
-                columns: {
-                  path: true,
-                  altText: true,
-                  position: true,
-                },
               },
             },
           },
         },
       },
     },
-  });
-
-  return items.map((item) => {
-    const cartImage = item.variant.product.images.find(
-      (image) => (image.position ?? 0) === 0,
-    );
-
-    return {
-      id: item.id,
-      cartId: item.cartId,
-      variantId: item.variantId,
-      quantity: item.quantity,
-      productName: item.variant.product.name,
-      productSlug: item.variant.product.slug,
-      price: Number(item.variant.price),
-      imagePath: cartImage?.path ?? null,
-      imageAltText: cartImage?.altText ?? null,
-    };
+    orderBy: (cartItems, { asc }) => [asc(cartItems.variantId)],
   });
 }
 
-export async function setCartItemQuantity(
+export async function addToCartDB(variantId: string, quantity: number) {
+  const cart = await getOrCreateCart();
+
+  const existingItem = await db.query.cartItems.findFirst({
+    where: and(
+      eq(cartItems.cartId, cart.id),
+      eq(cartItems.variantId, variantId),
+    ),
+  });
+
+  if (existingItem) {
+    const updatedItem = await db
+      .update(cartItems)
+      .set({ quantity: existingItem.quantity + quantity })
+      .where(eq(cartItems.id, existingItem.id))
+      .returning();
+    if (!updatedItem) throw new Error('Failed to update cart item');
+  } else {
+    const newItem = await db.insert(cartItems).values({
+      cartId: cart.id,
+      variantId,
+      quantity,
+    });
+    if (!newItem) throw new Error('Failed to add item to cart');
+  }
+}
+export async function setCartItemQuantityDB(
   cartItemId: string,
   quantity: number,
-) {}
+) {
+  const updatedItem = await db
+    .update(cartItems)
+    .set({ quantity })
+    .where(eq(cartItems.id, cartItemId))
+    .returning();
+  if (updatedItem == null)
+    throw new Error('Failed to update cart item quantity');
+  return updatedItem;
+}
 
-export async function clearCartItems(cartId: string) {}
+export async function removeCartItemDB(cartItemId: string) {
+  const deletedItem = await db
+    .delete(cartItems)
+    .where(eq(cartItems.id, cartItemId))
+    .returning();
+  if (deletedItem == null) throw new Error('Failed to remove cart item');
+  return deletedItem;
+}
+export async function clearCartItemsDB() {
+  const cart = await getCartDB();
+  if (!cart) return null;
+
+  const cartId = cart.id;
+
+  const deletedItems = await db
+    .delete(cartItems)
+    .where(eq(cartItems.cartId, cartId))
+    .returning();
+
+  if (deletedItems == null) throw new Error('Failed to clear cart');
+
+  return deletedItems;
+}

@@ -1,7 +1,7 @@
-import { ProductImage, ProductWithImages } from '@/components/ProductImage';
-import Image from 'next/image';
+import { ProductImage } from '@/components/ProductImage';
+import { ProductWithDetails } from '../page';
 
-export function ProductGallery({ product }: { product: ProductWithImages }) {
+export function ProductGallery({ product }: { product: ProductWithDetails }) {
   return (
     <section
       className='aspect-[327/756] md:aspect-[690/368] lg:aspect-[1110/592] 

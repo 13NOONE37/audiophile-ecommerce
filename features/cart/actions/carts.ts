@@ -1,10 +1,15 @@
 'use server';
 
 import { db } from '@/db/db';
-import { cartItems } from '@/db/schema';
+import { cartItems, carts, productImages } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { clearCartItems, getCartItems, setCartItemQuantity } from '../db/carts';
-import { getOrCreateCart } from '../lib/getOrCreateCart';
+import {
+  addToCartDB,
+  clearCartItemsDB,
+  getCartItemsDB,
+  removeCartItemDB,
+  setCartItemQuantityDB,
+} from '../db/carts';
 import { addToCartSchema, setCartItemQuantitySchema } from '../schemas/carts';
 
 export async function addToCart(
@@ -22,36 +27,19 @@ export async function addToCart(
 
   const { variantId, quantity } = parsed.data;
 
-  const cart = await getOrCreateCart();
-
-  const existingItem = await db.query.cartItems.findFirst({
-    where: and(
-      eq(cartItems.cartId, cart.id),
-      eq(cartItems.variantId, variantId),
-    ),
-  });
-
-  if (existingItem) {
-    await db
-      .update(cartItems)
-      .set({ quantity: existingItem.quantity + quantity })
-      .where(eq(cartItems.id, existingItem.id));
-  } else {
-    await db.insert(cartItems).values({
-      cartId: cart.id,
-      variantId,
-      quantity,
-    });
-  }
+  await addToCartDB(variantId, quantity);
 
   return { error: false };
 }
 
-export async function getCartItemsAction() {
-  return getCartItems();
+export async function getCartItems() {
+  return await getCartItemsDB();
 }
+export type CartItemsWithDetails = NonNullable<
+  Awaited<ReturnType<typeof getCartItemsDB>>
+>;
 
-export async function setCartItemQuantityAction(
+export async function setCartItemQuantity(
   unsafeCartItemId: unknown,
   unsafeQuantity: unknown,
 ) {
@@ -60,17 +48,15 @@ export async function setCartItemQuantityAction(
     quantity: unsafeQuantity,
   });
 
-  if (!parsed.success) {
+  if (!parsed.success)
     return { error: true, message: 'Invalid quantity payload' };
-  }
 
   const { cartItemId, quantity } = parsed.data;
   if (quantity === 0) {
-    await db.delete(cartItems).where(eq(cartItems.id, cartItemId));
+    await removeCartItemDB(cartItemId);
     return { error: false };
   }
-
-  const success = await setCartItemQuantity(cartItemId, quantity);
+  const success = await setCartItemQuantityDB(cartItemId, quantity);
 
   if (!success) {
     return { error: true, message: 'Cart item not found' };
@@ -79,7 +65,7 @@ export async function setCartItemQuantityAction(
   return { error: false };
 }
 
-export async function clearCartAction() {
-  await clearCartItems();
+export async function clearCartItems() {
+  await clearCartItemsDB();
   return { error: false };
 }

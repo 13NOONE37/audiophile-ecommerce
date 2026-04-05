@@ -1,61 +1,48 @@
 'use client';
 
 import {
-  getCartItemsAction,
-  setCartItemQuantityAction,
+  CartItemsWithDetails,
+  getCartItems,
+  setCartItemQuantity,
 } from '@/features/cart/actions/carts';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { formatPrice } from '@/lib/formatters';
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
-
-interface CartItem {
-  id: string;
-  productName: string;
-  short_name?: string;
-  imagePath: string | null;
-  imageAltText: string | null;
-  price: number;
-  quantity: number;
-}
+import { ProductImage } from '@/components/ProductImage';
 
 const CartItemsDisplay = ({
   onItemsChange,
 }: {
-  onItemsChange?: (items: CartItem[]) => void;
+  onItemsChange?: (items: CartItemsWithDetails) => void;
 }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  const loadItems = useCallback(async () => {
-    const items = await getCartItemsAction();
-    setCartItems(items);
-    onItemsChange?.(items);
-  }, [onItemsChange]);
-
+  const [cartItems, setCartItems] = useState<CartItemsWithDetails>([]);
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
 
-    const refresh = async () => {
-      if (!mounted) return;
-      await loadItems();
-    };
-
-    const onCartUpdated = () => {
-      void refresh();
-    };
-
-    void refresh();
-    window.addEventListener('cart-updated', onCartUpdated);
+    (async () => {
+      try {
+        const items = await getCartItems();
+        if (cancelled) return;
+        const safeItems = items ?? [];
+        setCartItems(safeItems);
+        onItemsChange?.(safeItems);
+      } catch (err) {
+        console.error('Failed to load cart items', err);
+        if (cancelled) return;
+        setCartItems([]);
+        onItemsChange?.([]);
+      }
+    })();
 
     return () => {
-      mounted = false;
-      window.removeEventListener('cart-updated', onCartUpdated);
+      cancelled = true;
     };
-  }, [loadItems]);
+  }, [onItemsChange]);
 
   const handleSetQuantity = async (id: string, nextQuantity: number) => {
     const normalizedQuantity = Math.max(1, Math.floor(nextQuantity));
-    const result = await setCartItemQuantityAction(id, normalizedQuantity);
+    const result = await setCartItemQuantity(id, normalizedQuantity);
 
     if (result.error) return;
 
@@ -66,7 +53,6 @@ const CartItemsDisplay = ({
       onItemsChange?.(nextItems);
       return nextItems;
     });
-    window.dispatchEvent(new Event('cart-updated'));
   };
 
   return cartItems.length > 0 ? (
@@ -77,12 +63,9 @@ const CartItemsDisplay = ({
           className='grid grid-cols-[64px_1fr_auto] grid-rows-2 gap-x-4 gap-y-0 items-center h-16'
         >
           {/* Image */}
-          <Image
-            src={
-              item.imagePath ??
-              '/images/products/zx7-speaker/default/preview/image-category-page-preview.jpg'
-            }
-            alt={item.imageAltText ?? item.productName}
+          <ProductImage
+            product={item.variant.product}
+            role='cart'
             width={64}
             height={64}
             sizes='64px'
@@ -91,7 +74,7 @@ const CartItemsDisplay = ({
 
           {/* Name */}
           <span className='text-sm font-bold uppercase text-black self-end'>
-            {item.short_name || item.productName}
+            {item.variant.product.short_name || item.variant.product.name}
           </span>
 
           {/* Quantity Controls */}
@@ -103,13 +86,14 @@ const CartItemsDisplay = ({
                   typeof next === 'function' ? next(item.quantity) : next;
                 void handleSetQuantity(item.id, resolved);
               }}
+              allowZero
               className='h-8 w-24'
             />
           </div>
 
           {/* Price */}
           <span className='text-xs font-bold text-black/50 uppercase self-start'>
-            {formatPrice(item.price)}
+            {formatPrice(Number(item.variant.price))}
           </span>
         </li>
       ))}

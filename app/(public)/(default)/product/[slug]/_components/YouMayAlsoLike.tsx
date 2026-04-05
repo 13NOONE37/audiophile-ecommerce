@@ -1,24 +1,12 @@
 import { LinkButton } from '@/components/button';
-import { ProductImage, ProductWithImages } from '@/components/ProductImage';
-import { productRecommendations, products } from '@/db/schema';
-import { InferSelectModel } from 'drizzle-orm';
+import { ProductImage } from '@/components/ProductImage';
 
-type RecommendedProduct = Pick<
-  InferSelectModel<typeof products>,
-  'id' | 'name' | 'short_name' | 'slug'
-> &
-  ProductWithImages;
-
-type RecommendationWithProduct = InferSelectModel<
-  typeof productRecommendations
-> & {
-  recommended: RecommendedProduct;
-};
+import { ProductWithDetails } from '../page';
 
 export function YouMayAlsoLike({
   recommendations,
 }: {
-  recommendations: RecommendationWithProduct[];
+  recommendations: ProductWithDetails['recommendations'];
 }) {
   return (
     <section>

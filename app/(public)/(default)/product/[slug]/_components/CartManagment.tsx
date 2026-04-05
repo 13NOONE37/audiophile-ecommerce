@@ -21,9 +21,6 @@ export function CartManagment({ variantId }: { variantId: string }) {
         className='uppercase'
         onClick={async () => {
           const result = await addToCart(variantId, quantity);
-          if (!result.error) {
-            window.dispatchEvent(new Event('cart-updated'));
-          }
         }}
       >
         Add to cart

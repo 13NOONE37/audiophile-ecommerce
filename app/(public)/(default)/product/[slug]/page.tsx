@@ -167,3 +167,6 @@ async function getProduct(slug: string) {
 
   return product;
 }
+export type ProductWithDetails = NonNullable<
+  Awaited<ReturnType<typeof getProduct>>
+>;

@@ -1,52 +1,69 @@
+import { ProductWithDetails } from '@/app/(public)/(default)/product/[slug]/page';
 import { imageRoleEnum, imageTypeEnum } from '@/db/schema';
 import Image, { ImageProps } from 'next/image';
 
 export type ImageRole = (typeof imageRoleEnum.enumValues)[number];
 export type ImageType = (typeof imageTypeEnum.enumValues)[number];
-
-export type ProductImageRecord = {
-  path: string;
-  altText: string | null;
-  role: ImageRole;
-  type: ImageType;
-  position: number | null;
-  blurDataURL: string | null;
-  width: number | null;
-  height: number | null;
-};
 export type ProductWithImages = {
   name: string;
-  images: ProductImageRecord[];
+  images: ProductWithDetails['images'];
 };
 
 type BaseProductImageProps = {
-  image: ProductImageRecord;
+  image: ProductWithDetails['images'][number];
   fallbackAlt: string;
-} & Omit<ImageProps, 'src' | 'alt' | 'width' | 'height'>;
+} & Omit<ImageProps, 'src' | 'alt'>;
 
 export type ProductImageProps = {
   product: ProductWithImages;
   role: ImageRole;
   type?: ImageType;
   position?: number;
-} & Omit<ImageProps, 'src' | 'alt' | 'width' | 'height'>;
+} & Omit<ImageProps, 'src' | 'alt'>;
 
 export function ProductResolvedImage({
   image,
   fallbackAlt,
   ...props
 }: BaseProductImageProps) {
-  if (image.width == null || image.height == null) return null;
+  const {
+    width: propWidth,
+    height: propHeight,
+    fill,
+    ...restProps
+  } = props as {
+    width?: number;
+    height?: number;
+    fill?: boolean;
+  } & Record<string, unknown>;
+
+  const hasExplicitWidth = propWidth !== undefined && propWidth !== null;
+  const hasExplicitHeight = propHeight !== undefined && propHeight !== null;
+
+  const resolvedWidth = hasExplicitWidth
+    ? propWidth
+    : fill
+      ? undefined
+      : (image.width ?? undefined);
+
+  const resolvedHeight = hasExplicitHeight
+    ? propHeight
+    : fill
+      ? undefined
+      : (image.height ?? undefined);
+
+  const sizeProps = fill
+    ? { fill: true as const }
+    : { width: resolvedWidth, height: resolvedHeight };
 
   return (
     <Image
       src={image.path}
       alt={image.altText ?? fallbackAlt}
-      width={props.fill ? undefined : image.width}
-      height={props.fill ? undefined : image.height}
       placeholder={image.blurDataURL ? 'blur' : 'empty'}
       blurDataURL={image.blurDataURL ?? undefined}
-      {...props}
+      {...sizeProps}
+      {...(restProps as Omit<ImageProps, 'src' | 'alt'>)}
     />
   );
 }
