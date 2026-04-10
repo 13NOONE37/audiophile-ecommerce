@@ -1,23 +1,34 @@
 import { db } from '@/db/db';
 import { cartItems, carts, productImages } from '@/db/schema';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
+import { cacheTag, updateTag } from 'next/cache';
 import { getCartCookie } from '../lib/cookies';
 import { getOrCreateCart } from '../lib/getOrCreateCart';
+import { getCartIdTag } from './cache';
 
 export async function getCartDB() {
   const cartId = await getCartCookie();
   if (!cartId) return null;
+  return getCartByIdCached(cartId);
+}
 
+async function getCartByIdCached(cartId: string) {
+  'use cache';
+  cacheTag(getCartIdTag(cartId));
   return db.query.carts.findFirst({
     where: eq(carts.id, cartId),
   });
 }
+
 export async function getCartItemsDB() {
   const cart = await getCartDB();
   if (!cart) return null;
+  return getCartItemsCached(cart.id);
+}
 
-  const cartId = cart.id;
-
+async function getCartItemsCached(cartId: string) {
+  'use cache';
+  cacheTag(getCartIdTag(cartId));
   return db.query.cartItems.findMany({
     where: eq(cartItems.cartId, cartId),
     with: {
@@ -31,7 +42,6 @@ export async function getCartItemsDB() {
               short_name: true,
               name: true,
             },
-
             with: {
               images: {
                 where: and(eq(productImages.role, 'cart')),
@@ -63,13 +73,20 @@ export async function addToCartDB(variantId: string, quantity: number) {
       .returning();
     if (!updatedItem) throw new Error('Failed to update cart item');
   } else {
-    const newItem = await db.insert(cartItems).values({
-      cartId: cart.id,
-      variantId,
-      quantity,
-    });
-    if (!newItem) throw new Error('Failed to add item to cart');
+    const newItem = await db
+      .insert(cartItems)
+      .values({
+        cartId: cart.id,
+        variantId,
+        quantity,
+      })
+      .returning();
+    if (!newItem) {
+      throw new Error('Failed to add item to cart');
+    }
   }
+
+  updateTag(getCartIdTag(cart.id));
 }
 export async function setCartItemQuantityDB(
   cartItemId: string,
@@ -82,6 +99,8 @@ export async function setCartItemQuantityDB(
     .returning();
   if (updatedItem == null)
     throw new Error('Failed to update cart item quantity');
+
+  updateTag(getCartIdTag(updatedItem[0].cartId));
   return updatedItem;
 }
 
@@ -91,6 +110,8 @@ export async function removeCartItemDB(cartItemId: string) {
     .where(eq(cartItems.id, cartItemId))
     .returning();
   if (deletedItem == null) throw new Error('Failed to remove cart item');
+
+  updateTag(getCartIdTag(deletedItem[0].cartId));
   return deletedItem;
 }
 export async function clearCartItemsDB() {
@@ -106,5 +127,6 @@ export async function clearCartItemsDB() {
 
   if (deletedItems == null) throw new Error('Failed to clear cart');
 
+  updateTag(getCartIdTag(cartId));
   return deletedItems;
 }

@@ -7,8 +7,7 @@ import {
 } from '@/features/cart/actions/carts';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { formatPrice } from '@/lib/formatters';
-import Image from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProductImage } from '@/components/ProductImage';
 
 const CartItemsDisplay = ({

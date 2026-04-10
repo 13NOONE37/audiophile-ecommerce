@@ -12,7 +12,13 @@ import { FocusTrap } from 'focus-trap-react';
 import CartModal from './cartModal/cartModal';
 import { blockBodyScroll, enableBodyScroll } from '@/lib/bodyScroll';
 
-export default function Header({ className }: { className?: string }) {
+export default function Header({
+  className,
+  cartContent,
+}: {
+  className?: string;
+  cartContent: React.ReactNode;
+}) {
   // Menu handling
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLElement | null>(null);
@@ -149,7 +155,9 @@ export default function Header({ className }: { className?: string }) {
               isCartOpen ? 'bg-body/40 visible' : 'hidden',
             )}
           >
-            <CartModal showCart={isCartOpen} ref={cartRef} />
+            <CartModal showCart={isCartOpen} ref={cartRef}>
+              {cartContent}
+            </CartModal>
           </div>
         </div>
       </FocusTrap>

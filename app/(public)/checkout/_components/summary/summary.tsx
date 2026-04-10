@@ -42,7 +42,7 @@ export default function Summary({
 
               <div className='flex flex-col'>
                 <span className='text-sm font-bold uppercase text-black'>
-                  {item.variant.product.short_name}
+                  {item.variant.product.short_name || item.variant.product.name}
                 </span>
                 <span className='text-sm font-bold text-black/50'>
                   {formatPrice(Number(item.variant.price))}

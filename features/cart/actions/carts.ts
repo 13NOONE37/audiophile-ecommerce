@@ -1,8 +1,5 @@
 'use server';
 
-import { db } from '@/db/db';
-import { cartItems, carts, productImages } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
 import {
   addToCartDB,
   clearCartItemsDB,

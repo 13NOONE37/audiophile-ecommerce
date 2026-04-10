@@ -2,6 +2,8 @@ import Image from 'next/image';
 import Header from '../../_components/header';
 import styles from './homeHero/homeHero.module.css';
 import { Button, LinkButton } from '@/components/button';
+import { CartContent } from '../../_components/cartModal/CartContent';
+import { Suspense } from 'react';
 const Hero = () => {
   //? naprawić overflow - trzeba zmienić strukturę ponieważ aktualnie zasłania nam menu kontekstowe; trzeba będzie prawdopodbnie przenieść background do własnej sekcji która będzie zajmowała 100% przestrzeni i miała overflow hidden a header i teksty będą w osobnych
   //? pozycja bg na ekranach
@@ -34,7 +36,14 @@ const Hero = () => {
       </div>
 
       {/* Header⬇️ */}
-      <Header className='bg-transparent' />
+      <Header
+        className='bg-transparent'
+        cartContent={
+          <Suspense>
+            <CartContent />
+          </Suspense>
+        }
+      />
 
       {/* Content⬇️ */}
       <div className='page-max-width relative'>

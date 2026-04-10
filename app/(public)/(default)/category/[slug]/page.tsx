@@ -2,7 +2,7 @@ import { NewProductBadge } from '@/app/(public)/_components/newProductBadge';
 import { ProductImage } from '@/components/ProductImage';
 import { LinkButton } from '@/components/button';
 import { db } from '@/db/db';
-import { categories, products } from '@/db/schema';
+import { categories, productImages, products } from '@/db/schema';
 import { getCategoryIdTag } from '@/features/categories/db/cache';
 import { getCategoryIdProductsTag } from '@/features/products/db/cache';
 import { cn } from '@/lib/utils';
@@ -131,16 +131,7 @@ async function getProductsForCategory(categoryId: string) {
     ),
     with: {
       images: {
-        columns: {
-          altText: true,
-          blurDataURL: true,
-          width: true,
-          height: true,
-          role: true,
-          type: true,
-          position: true,
-          path: true,
-        },
+        where: eq(productImages.role, 'preview'),
       },
     },
     orderBy: (products, { asc }) => [asc(products.createdAt)],

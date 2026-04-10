@@ -3,12 +3,14 @@
 import { Button } from '@/components/button';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { addToCart } from '@/features/cart/actions/carts';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
 
 export function CartManagment({ variantId }: { variantId: string }) {
   const [quantity, setQuantity] = useState(1);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  //TODO pending state tu i w koszyku
   return (
     <div className='min-h-14.5 md:h-14.5 flex flex-row justify-start gap-4 mt-8 lg:mt-12'>
       <QuantitySelectInput
@@ -19,11 +21,15 @@ export function CartManagment({ variantId }: { variantId: string }) {
       <Button
         variant='primary'
         className='uppercase'
-        onClick={async () => {
-          const result = await addToCart(variantId, quantity);
+        disabled={isPending}
+        onClick={() => {
+          startTransition(async () => {
+            const result = await addToCart(variantId, quantity);
+            if (!result.error) router.refresh();
+          });
         }}
       >
-        Add to cart
+        {isPending ? '...' : 'Add to cart'}
       </Button>
     </div>
   );
