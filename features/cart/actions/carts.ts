@@ -7,6 +7,7 @@ import {
   removeCartItemDB,
   setCartItemQuantityDB,
 } from '../db/carts';
+import { UserError } from '@/lib/errors';
 import { addToCartSchema, setCartItemQuantitySchema } from '../schemas/carts';
 
 export async function addToCart(
@@ -24,13 +25,26 @@ export async function addToCart(
 
   const { variantId, quantity } = parsed.data;
 
-  await addToCartDB(variantId, quantity);
-
-  return { error: false };
+  try {
+    await addToCartDB(variantId, quantity);
+    return { error: false };
+  } catch (err) {
+    if (err instanceof UserError) {
+      return { error: true, message: err.message, details: err.data };
+    }
+    return {
+      error: true,
+      message: 'Could not add product to cart. Please try again.',
+    };
+  }
 }
 
 export async function getCartItems() {
-  return await getCartItemsDB();
+  try {
+    return await getCartItemsDB();
+  } catch (err) {
+    return null;
+  }
 }
 export type CartItemsWithDetails = NonNullable<
   Awaited<ReturnType<typeof getCartItemsDB>>
@@ -49,20 +63,41 @@ export async function setCartItemQuantity(
     return { error: true, message: 'Invalid quantity payload' };
 
   const { cartItemId, quantity } = parsed.data;
-  if (quantity === 0) {
-    await removeCartItemDB(cartItemId);
+  try {
+    console.log(quantity);
+    if (quantity === 0) {
+      const success = await removeCartItemDB(cartItemId);
+      if (!success) {
+        return { error: true, message: 'Cart item not found' };
+      }
+      return { error: false };
+    }
+    const success = await setCartItemQuantityDB(cartItemId, quantity);
+
+    if (!success) {
+      return { error: true, message: 'Cart item not found' };
+    }
+
     return { error: false };
+  } catch (err) {
+    if (err instanceof UserError) {
+      return { error: true, message: err.message, details: err.data };
+    }
+    return {
+      error: true,
+      message: 'Could not update quantity. Please try again.',
+    };
   }
-  const success = await setCartItemQuantityDB(cartItemId, quantity);
-
-  if (!success) {
-    return { error: true, message: 'Cart item not found' };
-  }
-
-  return { error: false };
 }
 
 export async function clearCartItems() {
-  await clearCartItemsDB();
-  return { error: false };
+  try {
+    await clearCartItemsDB();
+    return { error: false };
+  } catch (err) {
+    return {
+      error: true,
+      message: 'Could not clear cart. Please try again.',
+    };
+  }
 }

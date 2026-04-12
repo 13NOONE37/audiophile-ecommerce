@@ -9,6 +9,7 @@ import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { formatPrice } from '@/lib/formatters';
 import { useEffect, useState } from 'react';
 import { ProductImage } from '@/components/ProductImage';
+import { env } from '@/data/env/client';
 
 const CartItemsDisplay = ({
   onItemsChange,
@@ -40,7 +41,8 @@ const CartItemsDisplay = ({
   }, [onItemsChange]);
 
   const handleSetQuantity = async (id: string, nextQuantity: number) => {
-    const normalizedQuantity = Math.max(1, Math.floor(nextQuantity));
+    const normalizedQuantity = Math.max(0, Math.floor(nextQuantity));
+    console.log(normalizedQuantity);
     const result = await setCartItemQuantity(id, normalizedQuantity);
 
     if (result.error) return;
@@ -85,6 +87,10 @@ const CartItemsDisplay = ({
                   typeof next === 'function' ? next(item.quantity) : next;
                 void handleSetQuantity(item.id, resolved);
               }}
+              max={Math.min(
+                Number(env.NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT),
+                item.variant.stock,
+              )}
               allowZero
               className='h-8 w-24'
             />

@@ -22,6 +22,10 @@
   --color-brand-primary: #d87d4a;
   --color-brand-primary-light: #fbaf85;
 
+  --color-correct: #4ad84a;
+  --color-warning: #d8b74a;
+  --color-error: #d84a4c;
+
   --color-secondary: #fbaf85;
 
   --color-surface-page: #fafafa;

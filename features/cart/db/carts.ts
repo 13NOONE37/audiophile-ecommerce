@@ -1,10 +1,12 @@
 import { db } from '@/db/db';
-import { cartItems, carts, productImages } from '@/db/schema';
+import { UserError } from '@/lib/errors';
+import { cartItems, carts, productImages, productVariants } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { cacheTag, updateTag } from 'next/cache';
 import { getCartCookie } from '../lib/cookies';
 import { getOrCreateCart } from '../lib/getOrCreateCart';
 import { getCartIdTag } from './cache';
+import { env } from '@/data/env/client';
 
 export async function getCartDB() {
   const cartId = await getCartCookie();
@@ -35,6 +37,7 @@ async function getCartItemsCached(cartId: string) {
       variant: {
         columns: {
           price: true,
+          stock: true,
         },
         with: {
           product: {
@@ -57,7 +60,11 @@ async function getCartItemsCached(cartId: string) {
 
 export async function addToCartDB(variantId: string, quantity: number) {
   const cart = await getOrCreateCart();
-
+  const variantRecord = await db.query.productVariants.findFirst({
+    columns: { stock: true },
+    where: eq(productVariants.id, variantId),
+  });
+  const stock = variantRecord?.stock ?? 0;
   const existingItem = await db.query.cartItems.findFirst({
     where: and(
       eq(cartItems.cartId, cart.id),
@@ -66,6 +73,18 @@ export async function addToCartDB(variantId: string, quantity: number) {
   });
 
   if (existingItem) {
+    if (
+      existingItem.quantity + quantity >
+      Number(env.NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT)
+    ) {
+      throw new UserError(
+        `Quantity exceeds per-product limit (${env.NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT}).`,
+      );
+    }
+    if (existingItem.quantity + quantity > stock) {
+      throw new UserError(`Requested quantity exceeds stock.`);
+    }
+
     const updatedItem = await db
       .update(cartItems)
       .set({ quantity: existingItem.quantity + quantity })
@@ -73,6 +92,9 @@ export async function addToCartDB(variantId: string, quantity: number) {
       .returning();
     if (!updatedItem) throw new Error('Failed to update cart item');
   } else {
+    if (quantity > stock) {
+      throw new UserError(`Requested quantity exceeds stock.`);
+    }
     const newItem = await db
       .insert(cartItems)
       .values({
@@ -92,11 +114,34 @@ export async function setCartItemQuantityDB(
   cartItemId: string,
   quantity: number,
 ) {
+  // Validate stock before updating quantity
+  const item = await db.query.cartItems.findFirst({
+    where: eq(cartItems.id, cartItemId),
+    columns: { variantId: true, cartId: true },
+  });
+
+  if (!item) throw new Error('Cart item not found');
+
+  const variantRecord = await db.query.productVariants.findFirst({
+    columns: { stock: true },
+    where: eq(productVariants.id, item.variantId),
+  });
+  const stock = variantRecord?.stock ?? 0;
+  if (quantity > stock) {
+    throw new UserError(
+      `Requested quantity exceeds stock. Only ${stock} left.`,
+      {
+        available: stock,
+      },
+    );
+  }
+
   const updatedItem = await db
     .update(cartItems)
     .set({ quantity })
     .where(eq(cartItems.id, cartItemId))
     .returning();
+
   if (updatedItem == null)
     throw new Error('Failed to update cart item quantity');
 
@@ -105,13 +150,20 @@ export async function setCartItemQuantityDB(
 }
 
 export async function removeCartItemDB(cartItemId: string) {
+  const cart = await getCartDB();
+  if (!cart) return null;
+
+  const cartId = cart.id;
   const deletedItem = await db
     .delete(cartItems)
-    .where(eq(cartItems.id, cartItemId))
+    .where(and(eq(cartItems.cartId, cartId), eq(cartItems.id, cartItemId)))
     .returning();
-  if (deletedItem == null) throw new Error('Failed to remove cart item');
 
-  updateTag(getCartIdTag(deletedItem[0].cartId));
+  if (!deletedItem || deletedItem.length === 0) {
+    throw new Error('Failed to remove cart item');
+  }
+
+  updateTag(getCartIdTag(cartId));
   return deletedItem;
 }
 export async function clearCartItemsDB() {

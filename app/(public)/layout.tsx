@@ -3,6 +3,7 @@ import { Manrope } from 'next/font/google';
 import '@/styles/globals.css';
 import Header from './_components/header';
 import Footer from './_components/footer';
+import { Toaster } from 'sonner';
 
 const manrope = Manrope({
   variable: '--font-manropeSans',
@@ -26,6 +27,13 @@ export default function PublicLayout({
     >
       {children}
       <Footer />
+      <Toaster
+        closeButton
+        containerAriaLabel='Notifications'
+        toastOptions={{
+          style: { borderRight: '10px solid var(--color-brand-primary)' },
+        }}
+      />
     </div>
   );
 }

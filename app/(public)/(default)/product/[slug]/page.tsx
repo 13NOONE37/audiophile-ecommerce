@@ -2,7 +2,7 @@ import { db } from '@/db/db';
 import { productImages, productRecommendations, products } from '@/db/schema';
 import { getProductIdTag } from '@/features/products/db/cache';
 import { and, eq } from 'drizzle-orm';
-import { cacheTag } from 'next/cache';
+import { cacheLife, cacheTag } from 'next/cache';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ProductDetails } from './_components/productDetails';
@@ -61,10 +61,23 @@ export default async function ProductPage({
             {product.description}
           </p>
           <span className='heading-6 text-body text-[18px] mt-6 md:mt-8'>
-            {formatPrice(Number(product.variants[currentVariantIndex].price))}
+            {formatPrice(Number(product.variants[currentVariantIndex].price))}{' '}
+            {(() => {
+              const stock = product.variants[currentVariantIndex].stock;
+              return stock >= 10 ? (
+                <span className='text-brand-primary'>In Stock</span>
+              ) : stock > 0 ? (
+                <span className='text-warning'>Only a few left</span>
+              ) : (
+                <span className='text-error'>Out of Stock</span>
+              );
+            })()}
           </span>
 
-          <CartManagment variantId={product.variants[currentVariantIndex].id} />
+          <CartManagment
+            variantId={product.variants[currentVariantIndex].id}
+            stock={product.variants[currentVariantIndex].stock}
+          />
         </div>
       </section>
       <div className='mt-22 md:mt-30 lg:mt-40'>
@@ -83,9 +96,14 @@ export default async function ProductPage({
     </div>
   );
 }
-
+//We don't have Admin dashboard yet so we revalide every 60sec
 async function getProduct(slug: string) {
   'use cache';
+  cacheLife({
+    stale: 120,
+    revalidate: 300,
+    expire: 3600,
+  });
   const product = await db.query.products.findFirst({
     columns: {
       id: true,

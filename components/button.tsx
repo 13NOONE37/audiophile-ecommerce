@@ -13,16 +13,30 @@ const variants = {
     'bg-transparent text-body ring ring-body hover:bg-body hover:text-body-inverted',
 };
 
+const variantsDisabled: Record<Variant, string> = {
+  primary: 'bg-brand-primary cursor-not-allowed opacity-60',
+  secondary: 'bg-body cursor-not-allowed opacity-60',
+  outline:
+    'bg-transparent text-body ring ring-body cursor-not-allowed opacity-60',
+};
+
 export function Button({
   variant = 'primary',
   children,
   className,
+  disabled,
   ...props
 }: {
   variant?: Variant;
 } & ComponentPropsWithoutRef<'button'>) {
+  const classes = cn(
+    baseStyle,
+    disabled ? variantsDisabled[variant] : variants[variant],
+    className,
+  );
+
   return (
-    <button className={cn(baseStyle, variants[variant], className)} {...props}>
+    <button className={classes} disabled={disabled} {...props}>
       {children}
     </button>
   );
@@ -32,12 +46,26 @@ export function LinkButton({
   variant = 'primary',
   children,
   className,
+  disabled,
   ...props
 }: {
   variant?: Variant;
+  disabled?: boolean;
 } & ComponentPropsWithoutRef<typeof Link>) {
+  const classes = cn(
+    baseStyle,
+    variants[variant],
+    className,
+    disabled ? 'pointer-events-none opacity-60' : undefined,
+  );
+
   return (
-    <Link className={cn(baseStyle, variants[variant], className)} {...props}>
+    <Link
+      className={classes}
+      aria-disabled={disabled ? 'true' : undefined}
+      tabIndex={disabled ? -1 : undefined}
+      {...props}
+    >
       {children}
     </Link>
   );
