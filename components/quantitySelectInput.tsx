@@ -1,7 +1,8 @@
 'use client';
 import { cn } from '@/lib/utils';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useDebouncedCallback } from 'use-debounce';
 
 export function QuantitySelectInput({
   value,
@@ -12,7 +13,7 @@ export function QuantitySelectInput({
   className,
 }: {
   value: number;
-  setValue: Dispatch<SetStateAction<number>>;
+  setValue: (value: number) => void;
   allowZero?: boolean;
   max?: number;
   disabled?: boolean;
@@ -44,12 +45,14 @@ export function QuantitySelectInput({
     setInputValue(String(next));
   };
 
+  const debouncedUpdate = useDebouncedCallback((qty: number) => {
+    setValue(qty);
+  }, 500);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     setInputValue(raw);
-  };
 
-  const handleBlur = () => {
     const parsed = Number(inputValue);
     if (
       inputValue === '' ||
@@ -59,9 +62,10 @@ export function QuantitySelectInput({
     ) {
       setInputValue(String(value));
     } else {
-      setValue(parsed);
+      debouncedUpdate(parsed);
     }
   };
+
   return (
     <div
       className={cn(
@@ -80,7 +84,6 @@ export function QuantitySelectInput({
         type='number'
         value={inputValue}
         onChange={handleChange}
-        onBlur={handleBlur}
         className='font-inherit text-center w-full h-full outline-none border-none bg-transparent focus:bg-[#d9d9d9] disabled:cursor-not-allowed disabled:opacity-60 [&::-webkit-outer-spin-button]:[-webkit-appearance:none] [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:[-webkit-appearance:none] [&::-webkit-inner-spin-button]:m-0 [appearance:textfield]'
         disabled={disabled}
       />

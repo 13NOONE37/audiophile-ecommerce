@@ -1,19 +1,54 @@
-import { getCartItemsDB } from '@/features/cart/db/carts';
+'use client';
+
+import { clearCartItems, updateQuantity } from '@/features/cart/actions/carts';
 import { formatPrice } from '@/lib/formatters';
 import { ProductImage } from '@/components/ProductImage';
 import { LinkButton } from '@/components/button';
 import { CartItemQuantityControl } from './CartItemQuantityControl';
-import { RemoveAllButton } from './RemoveAllButton';
+import { useEffect, useOptimistic, useState, useTransition } from 'react';
 
-export async function CartContent() {
-  const items = await getCartItemsDB();
-  const safeItems = items ?? [];
+import { cartReducer } from '@/features/cart/lib/cartReducer';
+import { Cart } from '@/features/cart/lib/types/cart';
+import { toast } from 'sonner';
 
-  const itemCount = safeItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = safeItems.reduce(
+export function CartContent({ cart }: { cart: Cart | null }) {
+  if (!cart) {
+    return <div className='w-full text-center py-8'>Cart does not exist</div>;
+  }
+  const [optimisticCart, dispatch] = useOptimistic(cart, cartReducer);
+  const [isPending, startTransition] = useTransition();
+
+  const itemCount = optimisticCart.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const totalPrice = optimisticCart.items.reduce(
     (sum, item) => sum + Number(item.variant.price) * item.quantity,
     0,
   );
+
+  const handleUpdateQuantity = (itemId: string, quantity: number) => {
+    startTransition(async () => {
+      dispatch({
+        type: quantity <= 0 ? 'REMOVE_ITEM' : 'UPDATE_QUANTITY',
+        itemId,
+        quantity,
+      });
+
+      const result = await updateQuantity(itemId, quantity);
+
+      if (!result.success) toast.error(result.error);
+    });
+  };
+
+  const handleClearCartItems = () => {
+    startTransition(async () => {
+      dispatch({ type: 'CLEAR' });
+      const result = await clearCartItems();
+
+      if (!result.success) toast.error(result.error);
+    });
+  };
 
   return (
     <div className='px-3 py-8 xs:px-8 h-full flex flex-col'>
@@ -22,14 +57,20 @@ export async function CartContent() {
         <span className='text-lg font-bold tracking-wide uppercase text-black'>
           Cart ({itemCount})
         </span>
-        <RemoveAllButton />
+        <button
+          onClick={handleClearCartItems}
+          disabled={isPending}
+          className='text-sm font-medium text-black/50 hover:text-brand-primary underline cursor-pointer disabled:opacity-50'
+        >
+          Remove all
+        </button>
       </div>
 
       {/* Items */}
       <div className='flex-1 overflow-auto mb-8'>
-        {safeItems.length > 0 ? (
+        {optimisticCart.items.length > 0 ? (
           <ul className='flex flex-col gap-6 overflow-auto'>
-            {safeItems.map((item) => (
+            {optimisticCart.items.map((item) => (
               <li
                 key={item.id}
                 className='grid grid-cols-[64px_1fr_auto] grid-rows-2 gap-x-4 gap-y-0 items-center h-16'
@@ -47,8 +88,12 @@ export async function CartContent() {
                 </span>
                 <div className='row-span-2 flex items-center justify-center'>
                   <CartItemQuantityControl
-                    cartItemId={item.id}
-                    initialQuantity={item.quantity}
+                    key={item.id}
+                    item={item}
+                    onQuantityChange={(qty) =>
+                      handleUpdateQuantity(item.id, qty)
+                    }
+                    disabled={false}
                   />
                 </div>
                 <span className='text-xs font-bold text-black/50 uppercase self-start'>
@@ -72,12 +117,16 @@ export async function CartContent() {
           Total
         </span>
         <span className='text-lg font-bold text-black uppercase'>
-          {formatPrice(totalPrice)}
+          {formatPrice(totalPrice, { showZeroAsNumber: true })}
         </span>
       </div>
 
       {/* CTA Button */}
-      <LinkButton href='/checkout' className='w-full uppercase text-center'>
+      <LinkButton
+        href='/checkout'
+        className='w-full uppercase text-center'
+        disabled={isPending || optimisticCart.items.length === 0}
+      >
         Checkout
       </LinkButton>
     </div>

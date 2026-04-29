@@ -2,10 +2,11 @@ import type { ChangeEvent } from 'react';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
 import { cn } from '@/lib/utils';
-import IconCashOnDelivery from '@/icons/IconCashOnDelivery';
 import type { CheckoutFormState, FormErrors } from '../checkout/types';
 import FormField from './_components/formField';
-import RadioOption from './_components/radio';
+
+import HotpayLogo from '@/public/images/shared/obsluga-platnosci.png';
+import Image from 'next/image';
 
 countries.registerLocale(enLocale);
 
@@ -166,58 +167,9 @@ export default function Billing({ formState, errors, onChange }: Props) {
         <h2 className='subtitle-text text-brand-primary uppercase'>
           Payment Details
         </h2>
-        <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
-          <span className='text-xs font-bold text-black md:self-center'>
-            Payment Method
-          </span>
-          <div className='flex flex-col gap-4'>
-            <RadioOption
-              name='paymentMethod'
-              value='e-money'
-              label='e-Money'
-              checked={formState.paymentMethod === 'e-money'}
-              onChange={onChange}
-            />
-            <RadioOption
-              name='paymentMethod'
-              value='cash-on-delivery'
-              label='Cash on Delivery'
-              checked={formState.paymentMethod === 'cash-on-delivery'}
-              onChange={onChange}
-            />
-          </div>
+        <div className='mt-6 w-fit'>
+          <Image src={HotpayLogo} alt='Hotpay' className='h-10 w-auto' />
         </div>
-
-        {formState.paymentMethod === 'e-money' ? (
-          <div className='mt-6 grid grid-cols-1 md:grid-cols-2 gap-6'>
-            <FormField
-              label='e-Money Number'
-              name='eMoneyNumber'
-              placeholder='238521993'
-              value={formState.eMoneyNumber}
-              error={errors.eMoneyNumber}
-              onChange={onChange}
-            />
-            <FormField
-              label='e-Money PIN'
-              name='eMoneyPin'
-              placeholder='6891'
-              value={formState.eMoneyPin}
-              error={errors.eMoneyPin}
-              onChange={onChange}
-            />
-          </div>
-        ) : (
-          <div className='mt-8 flex flex-col md:flex-row items-center gap-8'>
-            <IconCashOnDelivery className='shrink-0' />
-            <p className='content-text text-black/50 text-center md:text-left'>
-              The &apos;Cash on Delivery&apos; option enables you to pay in cash
-              when our delivery courier arrives at your residence. Just make
-              sure your address is correct so that your order will not be
-              cancelled.
-            </p>
-          </div>
-        )}
       </section>
     </div>
   );

@@ -1,8 +1,6 @@
 import Categories from '../_components/categories';
-import Header from '../_components/header';
+import Header from '../_components/header/header';
 import Outro from '../_components/outro';
-import { CartContent } from '../_components/cartModal/CartContent';
-import { Suspense } from 'react';
 export default function PublicDefaultLayout({
   children,
 }: {
@@ -10,13 +8,7 @@ export default function PublicDefaultLayout({
 }) {
   return (
     <>
-      <Header
-        cartContent={
-          <Suspense>
-            <CartContent />
-          </Suspense>
-        }
-      />
+      <Header />
       <main>
         {children}
 

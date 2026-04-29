@@ -1,4 +1,4 @@
-import Header from '../_components/header';
+import Header from '../_components/header/header';
 import Hero from './_components/hero';
 
 export default function PublicLandingLayout({

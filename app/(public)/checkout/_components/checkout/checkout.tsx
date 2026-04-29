@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import countries from 'i18n-iso-countries';
@@ -11,7 +11,11 @@ import Billing from '../billing/billing';
 import Summary from '../summary/summary';
 import ConfirmationModal from '../confirmation/confirmation-modal';
 import type { CheckoutFormState, FormErrors } from './types';
-import { CartItemsWithDetails } from '@/features/cart/actions/carts';
+import { Cart } from '@/features/cart/lib/types/cart';
+import { validateAndAdjustCart } from '@/features/checkout/actions/checkout';
+import { StockValidationResult } from '@/features/checkout/types/checkout';
+import { ActionResult } from '@/features/cart/lib/types/actionResults';
+import { AdjustmentBanner } from '../adjustmentBanner/adjustmentBanner';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -55,9 +59,6 @@ const checkoutSchema = z
       .string()
       .min(1, 'Required')
       .transform((value) => value.trim()),
-    paymentMethod: z.string(),
-    eMoneyNumber: z.string(),
-    eMoneyPin: z.string(),
   })
   .superRefine((data, ctx) => {
     const countryCode = resolveCountryCode(data.country);
@@ -77,36 +78,6 @@ const checkoutSchema = z
         message: 'Invalid ZIP/postal code for selected country',
       });
     }
-
-    if (data.paymentMethod !== 'e-money') return;
-
-    if (!data.eMoneyNumber) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['eMoneyNumber'],
-        message: 'Required',
-      });
-    } else if (!/^\d+$/.test(data.eMoneyNumber)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['eMoneyNumber'],
-        message: 'Invalid e-Money Number',
-      });
-    }
-
-    if (!data.eMoneyPin) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['eMoneyPin'],
-        message: 'Required',
-      });
-    } else if (!/^\d{4}$/.test(data.eMoneyPin)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['eMoneyPin'],
-        message: 'Invalid e-Money PIN',
-      });
-    }
   });
 
 const VAT_RATE = 0.2;
@@ -120,26 +91,20 @@ const INITIAL_FORM_STATE: CheckoutFormState = {
   zip: '',
   city: '',
   country: '',
-  paymentMethod: 'e-money',
-  eMoneyNumber: '',
-  eMoneyPin: '',
 };
 
-export default function CheckoutPage({
-  cartItems,
-}: {
-  cartItems: CartItemsWithDetails;
-}) {
+export default function CheckoutPage({ cart }: { cart: Cart }) {
   const router = useRouter();
   const [formState, setFormState] =
     useState<CheckoutFormState>(INITIAL_FORM_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const totalPrice = cartItems.reduce(
-    (sum, item) => sum + Number(item.variant.price) * item.quantity,
-    0,
-  );
+  const totalPrice =
+    cart?.items.reduce(
+      (sum, item) => sum + Number(item.variant.price) * item.quantity,
+      0,
+    ) ?? 0;
   const shippingPrice = totalPrice > 0 ? SHIPPING_COST : 0;
   const vatPrice = Math.round(totalPrice * VAT_RATE);
   const grandTotalPrice = totalPrice + shippingPrice;
@@ -183,6 +148,10 @@ export default function CheckoutPage({
     router.push('/');
   };
 
+  useEffect(() => {
+    validateAndAdjustCart();
+  }, []);
+
   return (
     <div className='py-4 md:py-12 lg:py-20'>
       <button
@@ -204,7 +173,7 @@ export default function CheckoutPage({
           onChange={handleChange}
         />
         <Summary
-          items={cartItems}
+          items={cart.items}
           totalPrice={totalPrice}
           shippingPrice={shippingPrice}
           vatPrice={vatPrice}
@@ -214,7 +183,7 @@ export default function CheckoutPage({
 
       {showConfirmation && (
         <ConfirmationModal
-          items={cartItems}
+          items={cart.items}
           grandTotalPrice={grandTotalPrice}
           onClose={handleConfirmationClose}
         />

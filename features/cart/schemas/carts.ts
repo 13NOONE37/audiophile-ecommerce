@@ -5,7 +5,7 @@ export const addToCartSchema = z.object({
   quantity: z.number().int().min(1),
 });
 
-export const setCartItemQuantitySchema = z.object({
+export const updateQuantitySchema = z.object({
   cartItemId: z.uuid(),
   quantity: z.number().int().min(0),
 });

@@ -1,16 +1,9 @@
 import React from 'react';
+import { CartContent } from './CartContent';
+import { getCart } from '@/features/cart/services/getCart';
+import { Cart } from '@/features/cart/lib/types/cart';
 
-const CartModal = ({
-  showCart,
-  ref,
-  children,
-}: {
-  showCart: boolean;
-  ref: React.RefObject<HTMLDivElement | null>;
-  children: React.ReactNode;
-}) => {
-  if (!ref) return null;
-
+const CartModal = async ({ cart }: { cart: Cart | null }) => {
   return (
     <div
       className={`fixed 
@@ -19,9 +12,8 @@ const CartModal = ({
           right-0 xs:right-6 md:right-10 
           md:w-96 
           bg-white rounded-lg`}
-      ref={ref}
     >
-      {children}
+      <CartContent cart={cart} />
     </div>
   );
 };

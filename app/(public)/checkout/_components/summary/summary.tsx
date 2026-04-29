@@ -2,11 +2,11 @@ import Image from 'next/image';
 import { Button } from '@/components/button';
 import { formatPrice } from '@/lib/formatters';
 import PriceRow from './_components/priceRow';
-import { CartItemsWithDetails } from '@/features/cart/actions/carts';
 import { ProductImage } from '@/components/ProductImage';
+import { CartItems } from '@/features/cart/lib/types/cart';
 
 interface Props {
-  items: CartItemsWithDetails;
+  items: CartItems;
   totalPrice: number;
   vatPrice: number;
   shippingPrice: number;

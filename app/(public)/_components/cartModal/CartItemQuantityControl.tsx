@@ -1,40 +1,27 @@
 'use client';
 
-import { setCartItemQuantity } from '@/features/cart/actions/carts';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { CartItems } from '@/features/cart/lib/types/cart';
 
 export function CartItemQuantityControl({
-  cartItemId,
-  initialQuantity,
+  item,
+  onQuantityChange,
+  disabled,
 }: {
-  cartItemId: string;
-  initialQuantity: number;
+  item: CartItems[number];
+  onQuantityChange: (qty: number) => void;
+  disabled: boolean;
 }) {
-  const [quantity, setQuantity] = useState(initialQuantity);
-  const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-
-  useEffect(() => {
-    setQuantity(initialQuantity);
-  }, [initialQuantity]);
-
   return (
     <QuantitySelectInput
-      value={quantity}
-      setValue={(next) => {
-        const resolved = typeof next === 'function' ? next(quantity) : next;
-        const normalized = Math.max(1, Math.floor(resolved));
+      value={item.quantity}
+      setValue={(value) => {
+        const normalized = Math.max(0, Math.floor(value));
 
-        setQuantity(normalized);
-        startTransition(async () => {
-          await setCartItemQuantity(cartItemId, normalized);
-          router.refresh();
-        });
+        onQuantityChange(normalized);
       }}
+      disabled={disabled}
       allowZero
-      disabled={isPending}
       className='h-8 w-24'
     />
   );

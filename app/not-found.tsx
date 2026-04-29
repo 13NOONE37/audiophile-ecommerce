@@ -2,7 +2,7 @@
 import type { Metadata } from 'next';
 import { Manrope } from 'next/font/google';
 import '@/styles/globals.css';
-import Header from './(public)/_components/header';
+import Header from './(public)/_components/header/header';
 import Footer from './(public)/_components/footer';
 import { LinkButton } from '@/components/button';
 import Image from 'next/image';

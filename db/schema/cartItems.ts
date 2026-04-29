@@ -1,4 +1,4 @@
-import { index, integer, pgTable, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, unique, uuid } from 'drizzle-orm/pg-core';
 import { id } from '../schemaHelpers';
 import { carts } from './carts';
 import { productVariants } from './productVariants';
@@ -16,7 +16,10 @@ export const cartItems = pgTable(
       .references(() => productVariants.id),
     quantity: integer('quantity').notNull(),
   },
-  (table) => [index('cart_items_cart_idx').on(table.cartId)],
+  (table) => [
+    index('cart_items_cart_idx').on(table.cartId),
+    unique('cart_items_variant_cart_unique').on(table.cartId, table.variantId), //They need to be unique together cartId-variantId, so we can easily modify quantity in insertCartitem
+  ],
 );
 
 export const CartItemRelations = relations(cartItems, ({ one, many }) => ({

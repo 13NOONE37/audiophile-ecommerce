@@ -35,7 +35,6 @@ export default async function ProductPage({
 
   //We do not support variants yet, so we can just take the price from the first variant, but in the future we will need to create state here that will decide which information display depends on variant
   const currentVariantIndex = 0;
-  //TODO: support for stock managment, if there will be no stock of variant we should display info and disable add to cart button
   return (
     <div className='page-max-width mt-4 md:mt-8.5 lg:mt-20'>
       <Link

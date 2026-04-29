@@ -1,103 +1,97 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
 import {
-  addToCartDB,
-  clearCartItemsDB,
-  getCartItemsDB,
-  removeCartItemDB,
-  setCartItemQuantityDB,
+  getOrCreateCart,
+  insertCartItem,
+  removeCartItems,
+  updateCartItemQuantity,
 } from '../db/carts';
-import { UserError } from '@/lib/errors';
-import { addToCartSchema, setCartItemQuantitySchema } from '../schemas/carts';
-
+import { getOrCreateCartId } from '../lib/cartCookie';
+import {
+  ActionResult,
+  err,
+  ErrorCode,
+  ok,
+  okVoid,
+} from '../lib/types/actionResults';
+import { addToCartSchema, updateQuantitySchema } from '../schemas/carts';
+import { getCartIdTag } from '../db/cache';
+import { DomainError } from '../lib/errors/domainErrors';
+//TODO: update functions to take cartId as parameter
 export async function addToCart(
-  unsafeVariantId: unknown,
-  unsafeQuantity: unknown,
-) {
-  const parsed = addToCartSchema.safeParse({
-    variantId: unsafeVariantId,
-    quantity: unsafeQuantity,
-  });
-
+  variantId: string,
+  quantity = 1,
+): Promise<ActionResult<void>> {
+  const parsed = addToCartSchema.safeParse({ variantId, quantity });
   if (!parsed.success) {
-    return { error: true, message: 'Invalid cart payload' };
+    return err(
+      'Incorrect data',
+      ErrorCode.VALIDATION_ERROR,
+      parsed.error.flatten().fieldErrors,
+    );
   }
 
-  const { variantId, quantity } = parsed.data;
-
   try {
-    await addToCartDB(variantId, quantity);
-    return { error: false };
-  } catch (err) {
-    if (err instanceof UserError) {
-      return { error: true, message: err.message, details: err.data };
+    const cartId = await getOrCreateCartId();
+    const cart = await getOrCreateCart(cartId);
+    await insertCartItem(cart.id, parsed.data.variantId, parsed.data.quantity);
+
+    revalidateTag(getCartIdTag(cart.id), 'max');
+    return okVoid('Added to cart');
+  } catch (error) {
+    if (error instanceof DomainError) {
+      return err(error.message, error.code);
     }
-    return {
-      error: true,
-      message: 'Could not add product to cart. Please try again.',
-    };
-  }
-}
-
-export async function getCartItems() {
-  try {
-    return await getCartItemsDB();
-  } catch (err) {
-    return null;
+    console.error('[addToCart] Unexpected error:', error);
+    return err('Something went wrong, try again', ErrorCode.UNEXPECTED);
   }
 }
-export type CartItemsWithDetails = NonNullable<
-  Awaited<ReturnType<typeof getCartItemsDB>>
->;
+export async function updateQuantity(
+  cartItemId: string,
+  quantity: number,
+): Promise<ActionResult<void>> {
+  const parsed = updateQuantitySchema.safeParse({ cartItemId, quantity });
+  if (!parsed.success) {
+    return err(
+      'Incorrect data',
+      ErrorCode.VALIDATION_ERROR,
+      parsed.error.flatten().fieldErrors,
+    );
+  }
 
-export async function setCartItemQuantity(
-  unsafeCartItemId: unknown,
-  unsafeQuantity: unknown,
-) {
-  const parsed = setCartItemQuantitySchema.safeParse({
-    cartItemId: unsafeCartItemId,
-    quantity: unsafeQuantity,
-  });
-
-  if (!parsed.success)
-    return { error: true, message: 'Invalid quantity payload' };
-
-  const { cartItemId, quantity } = parsed.data;
   try {
-    console.log(quantity);
-    if (quantity === 0) {
-      const success = await removeCartItemDB(cartItemId);
-      if (!success) {
-        return { error: true, message: 'Cart item not found' };
-      }
-      return { error: false };
-    }
-    const success = await setCartItemQuantityDB(cartItemId, quantity);
+    const cartId = await getOrCreateCartId();
+    const cart = await getOrCreateCart(cartId);
+    await updateCartItemQuantity(
+      cart.id,
+      parsed.data.cartItemId,
+      parsed.data.quantity,
+    );
 
-    if (!success) {
-      return { error: true, message: 'Cart item not found' };
+    revalidateTag(getCartIdTag(cart.id), 'max');
+    return okVoid('Quantity updated');
+  } catch (error) {
+    if (error instanceof DomainError) {
+      return err(error.message, error.code);
     }
-
-    return { error: false };
-  } catch (err) {
-    if (err instanceof UserError) {
-      return { error: true, message: err.message, details: err.data };
-    }
-    return {
-      error: true,
-      message: 'Could not update quantity. Please try again.',
-    };
+    console.error('[updateQuantity] Unexpected error:', error);
+    return err('Something went wrong, try again', ErrorCode.UNEXPECTED);
   }
 }
-
-export async function clearCartItems() {
+export async function clearCartItems(): Promise<ActionResult<void>> {
   try {
-    await clearCartItemsDB();
-    return { error: false };
-  } catch (err) {
-    return {
-      error: true,
-      message: 'Could not clear cart. Please try again.',
-    };
+    const cartId = await getOrCreateCartId();
+    const cart = await getOrCreateCart(cartId);
+    await removeCartItems(cart.id);
+
+    revalidateTag(getCartIdTag(cart.id), 'max');
+    return okVoid('Cart cleared');
+  } catch (error) {
+    if (error instanceof DomainError) {
+      return err(error.message, error.code);
+    }
+    console.error('[clearCartItems] Unexpected error:', error);
+    return err('Something went wrong, try again', ErrorCode.UNEXPECTED);
   }
 }

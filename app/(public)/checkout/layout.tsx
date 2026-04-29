@@ -1,7 +1,4 @@
-import Footer from '../_components/footer';
-import Header from '../_components/header';
-import { CartContent } from '../_components/cartModal/CartContent';
-import { Suspense } from 'react';
+import Header from '../_components/header/header';
 export default function PublicCheckoutLayout({
   children,
 }: {
@@ -9,13 +6,7 @@ export default function PublicCheckoutLayout({
 }) {
   return (
     <>
-      <Header
-        cartContent={
-          <Suspense>
-            <CartContent />
-          </Suspense>
-        }
-      />
+      <Header />
       <main>
         <div className='page-max-width'>{children}</div>
       </main>

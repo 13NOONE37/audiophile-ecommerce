@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/button';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
 import { env } from '@/data/env/client';
 import { addToCart } from '@/features/cart/actions/carts';
@@ -23,26 +24,33 @@ export function CartManagment({
     <div className='min-h-14.5 md:h-14.5 flex flex-row justify-start gap-4 mt-8 lg:mt-12'>
       <QuantitySelectInput
         value={quantity}
-        setValue={setQuantity}
-        disabled={stock === 0}
-        max={Math.min(Number(env.NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT), stock)}
+        setValue={(value) => {
+          setQuantity(value);
+        }}
+        disabled={stock === 0 || isPending}
+        max={stock}
         className='h-full'
       />
 
       <Button
         variant='primary'
-        className='uppercase'
+        className='uppercase inline-flex items-center gap-2'
         disabled={isPending || stock === 0}
         onClick={() => {
           startTransition(async () => {
             const result = await addToCart(variantId, quantity);
-            if (result.error) {
-              toast.error(result.message);
-            } else router.refresh();
+
+            if (result.success) {
+              toast.success('Added to cart');
+              router.refresh();
+            } else {
+              toast.error(result.error);
+            }
           });
         }}
       >
-        {isPending ? '...' : 'Add to cart'}
+        {isPending && <LoadingSpinner size='sm' />}
+        Add to cart
       </Button>
     </div>
   );
