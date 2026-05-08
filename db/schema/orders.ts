@@ -1,21 +1,34 @@
-import { numeric, pgEnum, pgTable, text } from 'drizzle-orm/pg-core';
+import { numeric, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
 import { relations } from 'drizzle-orm';
 import { orderItems } from './orderItems';
+import { timestamp } from 'drizzle-orm/pg-core';
 
-export const orderStatusEnum = pgEnum('order_status', [
+const orderStatusEnum = pgEnum('order_status', [
   'pending',
   'paid',
   'failed',
   'shipped',
   'cancelled',
 ]);
-
+export const ORDER_STATUSES = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  FAILED: 'failed',
+  SHIPPED: 'shipped',
+  CANCELLED: 'cancelled',
+} as const;
 export const orders = pgTable('orders', {
   id: id,
   orderNumber: text('order_number').notNull().unique(),
   status: orderStatusEnum('status').default('pending').notNull(),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
+  confirmationToken: uuid('confirmation_token').notNull().defaultRandom(),
+  confirmationTokenExpiresAt: timestamp('confirmation_token_expires_at', {
+    withTimezone: true,
+  })
+    .notNull()
+    .default(new Date(Date.now() + 60 * 60 * 1000)), //1 hour
 
   // Delivery info
   email: text('email').notNull(),
@@ -35,5 +48,5 @@ export const orders = pgTable('orders', {
 });
 
 export const OrderRelations = relations(orders, ({ one, many }) => ({
-  items: many(orderItems, { relationName: 'order_items' }),
+  items: many(orderItems),
 }));

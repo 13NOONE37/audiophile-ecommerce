@@ -51,7 +51,7 @@ export default function Billing({ formState, errors, onChange }: Props) {
     ZIP_PLACEHOLDER_BY_COUNTRY.US;
 
   return (
-    <div className='bg-white rounded-lg p-6 md:p-7 lg:p-12 flex flex-col gap-8 self-start'>
+    <section className='bg-white rounded-lg p-6 md:p-7 lg:p-12 flex flex-col gap-8 self-start'>
       <h1 className='text-[28px] md:text-[32px] font-bold leading-tight tracking-[2px] uppercase'>
         Checkout
       </h1>
@@ -171,6 +171,6 @@ export default function Billing({ formState, errors, onChange }: Props) {
           <Image src={HotpayLogo} alt='Hotpay' className='h-10 w-auto' />
         </div>
       </section>
-    </div>
+    </section>
   );
 }

@@ -2,87 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import countries from 'i18n-iso-countries';
-import enLocale from 'i18n-iso-countries/langs/en.json';
-import { postcodeValidator } from 'postcode-validator';
-import { z } from 'zod';
 import Billing from '../billing/billing';
 import Summary from '../summary/summary';
-import ConfirmationModal from '../confirmation/confirmation-modal';
 import type { CheckoutFormState, FormErrors } from './types';
 import { Cart } from '@/features/cart/lib/types/cart';
-import { validateAndAdjustCart } from '@/features/checkout/actions/checkout';
-import { StockValidationResult } from '@/features/checkout/types/checkout';
-import { ActionResult } from '@/features/cart/lib/types/actionResults';
-import { AdjustmentBanner } from '../adjustmentBanner/adjustmentBanner';
-
-// ─── Validation Schema ────────────────────────────────────────────────────────
-
-countries.registerLocale(enLocale);
-
-const resolveCountryCode = (value: string) => {
-  const normalized = value.trim();
-  if (!normalized) return null;
-
-  if (/^[A-Za-z]{2}$/.test(normalized)) {
-    return normalized.toUpperCase();
-  }
-
-  const countryCode = countries.getAlpha2Code(normalized, 'en');
-  return countryCode ?? null;
-};
-
-const normalizePostalCode = (value: string) =>
-  value.trim().toUpperCase().replace(/\s+/g, ' ');
-
-const checkoutSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1, 'Required')
-      .max(32, 'Must be 32 characters or less'),
-    email: z.string().min(1, 'Required').email('Invalid email address'),
-    phone: z
-      .string()
-      .min(1, 'Required')
-      .transform((value) => value.trim())
-      .refine((value) => {
-        const phoneNumber = parsePhoneNumberFromString(value);
-        return phoneNumber?.isValid() ?? false;
-      }, 'Invalid phone number')
-      .transform((value) => parsePhoneNumberFromString(value)!.number),
-    address: z.string().min(1, 'Required'),
-    zip: z.string().min(1, 'Required').transform(normalizePostalCode),
-    city: z.string().min(1, 'Required'),
-    country: z
-      .string()
-      .min(1, 'Required')
-      .transform((value) => value.trim()),
-  })
-  .superRefine((data, ctx) => {
-    const countryCode = resolveCountryCode(data.country);
-
-    if (!countryCode) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['country'],
-        message: 'Select a valid country',
-      });
-    }
-
-    if (countryCode && !postcodeValidator(data.zip, countryCode)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['zip'],
-        message: 'Invalid ZIP/postal code for selected country',
-      });
-    }
-  });
+import {
+  placeOrder,
+  validateAndAdjustCart,
+} from '@/features/checkout/actions/checkout';
+import { toast } from 'sonner';
+import { checkoutSchema } from '@/features/checkout/schema/checkout';
+import { ErrorCode } from '@/features/cart/lib/types/actionResults';
+import { Button } from '@/components/button';
+import { initializePayment } from '@/features/checkout/actions/initializePayments';
 
 const VAT_RATE = 0.2;
 const SHIPPING_COST = 50;
-
 const INITIAL_FORM_STATE: CheckoutFormState = {
   name: '',
   email: '',
@@ -98,7 +33,6 @@ export default function CheckoutPage({ cart }: { cart: Cart }) {
   const [formState, setFormState] =
     useState<CheckoutFormState>(INITIAL_FORM_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const totalPrice =
     cart?.items.reduce(
@@ -119,7 +53,7 @@ export default function CheckoutPage({ cart }: { cart: Cart }) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = checkoutSchema.safeParse(formState);
 
@@ -139,13 +73,48 @@ export default function CheckoutPage({ cart }: { cart: Cart }) {
       zip: result.data.zip,
       country: result.data.country,
     }));
-    setShowConfirmation(true);
-  };
 
-  const handleConfirmationClose = () => {
-    setShowConfirmation(false);
-    setFormState(INITIAL_FORM_STATE);
-    router.push('/');
+    //Call server action
+    const orderResult = await placeOrder(result.data);
+    if (!orderResult.success) {
+      if (orderResult.code === ErrorCode.PRODUCT_OUT_OF_STOCK)
+        return toast.error(orderResult.error, {
+          duration: 10000,
+          action: (
+            <Button
+              variant='secondary'
+              onClick={validateAndAdjustCart}
+              className='p-2 w-30 uppercase'
+            >
+              Adjust
+            </Button>
+          ),
+        });
+
+      return toast.error(orderResult.error);
+    }
+
+    //Initialize payment
+    const paymentResult = await initializePayment(orderResult.data.orderId);
+    if (!paymentResult.success) {
+      toast.error(paymentResult.error);
+      router.push(
+        `/checkout/order-confirmation/${orderResult.data.confirmationToken}`,
+      );
+      return;
+    }
+
+    router.push(paymentResult.data.url);
+
+    //Initialize payment
+    //---if failed redirect to confirmation page where is information that status is pending and button to payment page(we need to design this version of confirmation page)
+    //Proceed payment
+    ///---failed: restore stock
+    ///---success: change status, send mail
+    //show confirmation(ze względu na strukturę projektu jako MVP musimy to zrobić jako osobną podstronę order-confirmation/[orderId] i tam wyświetlić potwierdzenie)
+
+    // console.log(orderResult.data.orderId);
+    // setShowConfirmation(true);
   };
 
   useEffect(() => {
@@ -180,14 +149,6 @@ export default function CheckoutPage({ cart }: { cart: Cart }) {
           grandTotalPrice={grandTotalPrice}
         />
       </form>
-
-      {showConfirmation && (
-        <ConfirmationModal
-          items={cart.items}
-          grandTotalPrice={grandTotalPrice}
-          onClose={handleConfirmationClose}
-        />
-      )}
     </div>
   );
 }

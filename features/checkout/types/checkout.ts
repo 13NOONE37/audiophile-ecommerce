@@ -8,3 +8,8 @@ export type AdjustedItem = {
   requestedQty: number;
   availableQty: number; // 0 = unavaible
 };
+
+export type PlaceOrderResult = {
+  confirmationToken: string;
+  orderId: string;
+};

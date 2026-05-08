@@ -85,6 +85,34 @@
       "when": 1777098411644,
       "tag": "0011_spooky_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1778042666040,
+      "tag": "0012_short_randall_flagg",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778043888877,
+      "tag": "0013_bumpy_hedge_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778043946109,
+      "tag": "0014_skinny_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1778047536246,
+      "tag": "0015_far_serpent_society",
+      "breakpoints": true
     }
   ]
 }

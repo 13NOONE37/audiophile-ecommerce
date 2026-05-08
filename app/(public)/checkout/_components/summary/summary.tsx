@@ -21,7 +21,7 @@ export default function Summary({
   grandTotalPrice,
 }: Props) {
   return (
-    <div className='bg-white rounded-lg p-6 md:p-8 flex flex-col gap-8 self-start'>
+    <section className='bg-white rounded-lg p-6 md:p-8 flex flex-col gap-8 self-start'>
       <h3 className='heading-6 uppercase'>Summary</h3>
 
       {items.length > 0 ? (
@@ -42,7 +42,8 @@ export default function Summary({
 
               <div className='flex flex-col'>
                 <span className='text-sm font-bold uppercase text-black'>
-                  {item.variant.product.short_name || item.variant.product.name}
+                  {item.variant.sku}
+                  {/* {item.variant.product.short_name || item.variant.product.name} */}
                 </span>
                 <span className='text-sm font-bold text-black/50'>
                   {formatPrice(Number(item.variant.price))}
@@ -80,6 +81,6 @@ export default function Summary({
       >
         Continue & Pay
       </Button>
-    </div>
+    </section>
   );
 }

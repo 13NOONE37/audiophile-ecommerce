@@ -51,9 +51,3 @@ async function CheckoutWrapper() {
     </>
   );
 }
-
-//TODO: we check if it is avaible in transaction and create order(status pending), if not we return error that somebody was faster and modify cart with toast
-//TODO: payment procedure
-
-//TODO: webhook: payment_success → UPDATE order SET status = 'paid'; we sent email and display confirmation page with order details;
-//TODO: webhook: payment_failed  → UPDATE order SET status = 'failed' → UPDATE stock SET stock = stock + quantity  ← zwrot stocku

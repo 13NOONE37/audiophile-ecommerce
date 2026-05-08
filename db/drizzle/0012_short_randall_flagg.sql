@@ -1,0 +1,2 @@
+ALTER TABLE "orders" ADD COLUMN "confirmation_token" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL;--> statement-breakpoint
+ALTER TABLE "orders" ADD COLUMN "confirmation_token_expires_at" timestamp with time zone NOT NULL;
