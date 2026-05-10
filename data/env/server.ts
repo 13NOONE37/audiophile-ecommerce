@@ -7,6 +7,7 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1),
     STRIPE_SECRET_KEY: z.string().min(1),
     STRIPE_WEBHOOK_KEY: z.string().min(1),
+    SHIPPING_COST: z.string().min(1),
     // // Baza danych
     // DB_PASSWORD: z.string().min(1),
     // DB_USER: z.string().min(1),

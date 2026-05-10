@@ -1,4 +1,8 @@
+'use server';
 import { env } from '@/data/env/client';
+import { env as serverEnv } from '@/data/env/server';
+import { db } from '@/db/db';
+import { orders } from '@/db/schema';
 import {
   ActionResult,
   err,
@@ -6,46 +10,70 @@ import {
   ok,
 } from '@/features/cart/lib/types/actionResults';
 import { stripe } from '@/lib/stripe/stripe';
+import { eq } from 'drizzle-orm';
 
 export async function initializePayment(
   orderId: string,
 ): Promise<ActionResult<{ url: string }>> {
-  return ok({ url: '' });
-  //   try {
-  //     const order: any = {};
-  //     // const order = await getOrderById(orderId);
-  //     if (!order) return err('Order does not exist', ErrorCode.UNEXPECTED);
+  try {
+    const order = await db.query.orders.findFirst({
+      where: eq(orders.id, orderId),
+      with: {
+        items: true,
+      },
+    });
+    if (!order) return err('Order does not exist', ErrorCode.UNEXPECTED);
 
-  //     const appUrl = env.NEXT_PUBLIC_APP_URL!;
+    const appUrl = env.NEXT_PUBLIC_APP_URL!;
 
-  //     const session = await stripe.checkout.sessions.create({
-  //       mode: 'payment',
-  //       payment_method_types: ['card', 'blik', 'p24'],
-  //       customer_email: order.email,
-  //       line_items: order.items.map((item) => ({
-  //         quantity: item.quantity,
-  //         price_data: {
-  //           currency: 'usd',
-  //           unit_amount: Math.round(item.price * 100),
-  //           product_data: {
-  //             name: item.product.name,
-  //           },
-  //         },
-  //       })),
-  //       metadata: {
-  //         orderId: order.id,
-  //         orderNumber: order.orderNumber,
-  //       },
-  //       success_url: `${appUrl}/order-confirmation/${order.confirmationToken}`,
-  //       cancel_url: `${appUrl}/checkout?cancelled=true`,
-  //     });
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      expires_at: Math.floor(Date.now() / 1000) + 60 * 30,
 
-  //     if (!session.url)
-  //       return err('Could not process payment', ErrorCode.UNEXPECTED);
+      customer_email: order.email,
+      line_items: [
+        ...order.items.map((item) => ({
+          quantity: item.quantity,
+          price_data: {
+            currency: 'usd',
+            unit_amount: Math.round(Number(item.priceSnapshot) * 100),
+            product_data: {
+              name: item.productNameSnapshot,
+            },
+          },
+        })),
+        {
+          quantity: 1,
+          price_data: {
+            currency: 'usd',
+            unit_amount: Math.round(Number(serverEnv.SHIPPING_COST) * 100),
+            product_data: {
+              name: 'Shipping cost',
+            },
+          },
+        },
+      ],
+      metadata: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+      },
+      payment_intent_data: {
+        metadata: {
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+        },
+      },
+      success_url: `${appUrl}/checkout/order-confirmation/${order.confirmationToken}`,
+      cancel_url: `${appUrl}/checkout/order-confirmation/${order.confirmationToken}`, //TODO: maybe page where user can cancel this order
+    });
 
-  //     return ok({ url: session.url });
-  //   } catch (error) {
-  //     console.error('[initializePayment', error);
-  //     return err('Could not connect to payment service', ErrorCode.UNEXPECTED);
-  //   }
+    if (!session.url)
+      return err('Could not process payment', ErrorCode.UNEXPECTED);
+
+    return ok({ url: session.url });
+  } catch (error) {
+    console.error('[initializePayment', error);
+    return err('Could not connect to payment service', ErrorCode.UNEXPECTED);
+  }
 }

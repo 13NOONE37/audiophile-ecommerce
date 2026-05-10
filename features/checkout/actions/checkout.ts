@@ -29,7 +29,6 @@ import { carts, orderItems, orders, productVariants } from '@/db/schema';
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import { checkoutSchema } from '../schema/checkout';
 import { env } from '@/data/env/server';
-import OrderConfirmationEmail from '@/components/emails/OrderConfirmationEmail';
 
 export async function validateAndAdjustCart(): Promise<
   ActionResult<StockValidationResult>
@@ -161,9 +160,11 @@ export async function placeOrder(
             cart.items.reduce(
               (sum, item) => sum + Number(item.variant.price) * item.quantity,
               0,
-            ),
+            ) + Number(env.SHIPPING_COST),
           ),
-          confirmationTokenExpiresAt: new Date(Date.now() + 60 * 60 * 100),
+          confirmationTokenExpiresAt: new Date(
+            Date.now() + 60 * 60 * 24 * 14 * 1000,
+          ), //2 weeks
           firstName: parsed.data.name,
           lastName: parsed.data.name,
           email: parsed.data.email,

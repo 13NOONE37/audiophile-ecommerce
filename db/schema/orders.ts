@@ -28,7 +28,7 @@ export const orders = pgTable('orders', {
     withTimezone: true,
   })
     .notNull()
-    .default(new Date(Date.now() + 60 * 60 * 1000)), //1 hour
+    .default(new Date(Date.now() + 60 * 60 * 24 * 14 * 1000)), //2 weeks
 
   // Delivery info
   email: text('email').notNull(),

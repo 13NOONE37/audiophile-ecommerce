@@ -1,3 +1,4 @@
+import { Button } from '@/components/button';
 import { ProductImage } from '@/components/ProductImage';
 import { db } from '@/db/db';
 import { ORDER_STATUSES, orders, productImages } from '@/db/schema';
@@ -7,6 +8,9 @@ import { formatPrice } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import { and, eq, gt } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
+
+import { toast } from 'sonner';
+import { RetryPaymentButton } from './_components/RetryPaymentButton';
 
 export default async function OrderConfirmationPage({
   params,
@@ -19,6 +23,7 @@ export default async function OrderConfirmationPage({
   const order = await getOrderByToken(token);
 
   if (!order) notFound();
+
   return (
     <section className='py-4 md:py-12 lg:py-20'>
       <a
@@ -52,6 +57,9 @@ export default async function OrderConfirmationPage({
           {order.status}
         </span>
       </div>
+      {order.status === 'pending' && (
+        <RetryPaymentButton orderId={order.id} className='mt-2' />
+      )}
 
       <div className='mt-6 rounded-lg overflow-hidden flex flex-col md:flex-row'>
         {/* Items list */}

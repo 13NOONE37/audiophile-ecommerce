@@ -15,9 +15,10 @@ import { checkoutSchema } from '@/features/checkout/schema/checkout';
 import { ErrorCode } from '@/features/cart/lib/types/actionResults';
 import { Button } from '@/components/button';
 import { initializePayment } from '@/features/checkout/actions/initializePayments';
+import { env } from '@/data/env/client';
 
-const VAT_RATE = 0.2;
-const SHIPPING_COST = 50;
+const VAT_RATE = Number(env.NEXT_PUBLIC_VAT_RATE);
+const SHIPPING_COST = Number(env.NEXT_PUBLIC_SHIPPING_COST);
 const INITIAL_FORM_STATE: CheckoutFormState = {
   name: '',
   email: '',

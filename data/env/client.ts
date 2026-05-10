@@ -4,6 +4,8 @@ import { z } from 'zod';
 export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
+    NEXT_PUBLIC_SHIPPING_COST: z.string().min(1),
+    NEXT_PUBLIC_VAT_RATE: z.string().min(1),
     // NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT: z.string().min(1),
     // NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
     // NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().min(1),
@@ -14,6 +16,8 @@ export const env = createEnv({
 
   experimental__runtimeEnv: {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_SHIPPING_COST: process.env.NEXT_PUBLIC_SHIPPING_COST,
+    NEXT_PUBLIC_VAT_RATE: process.env.NEXT_PUBLIC_VAT_RATE,
     // NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT:
     //   process.env.NEXT_PUBLIC_MAX_ITEMS_PER_PRODUCT,
     // NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:

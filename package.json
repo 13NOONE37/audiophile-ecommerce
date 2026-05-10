@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "email": "email dev --dir emails",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -31,6 +32,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@react-email/ui": "^6.1.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.16.0",
@@ -40,6 +42,7 @@
     "drizzle-kit": "^0.31.9",
     "eslint": "^9",
     "eslint-config-next": "16.0.6",
+    "react-email": "^6.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
