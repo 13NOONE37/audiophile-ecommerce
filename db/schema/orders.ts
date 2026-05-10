@@ -21,6 +21,7 @@ export const ORDER_STATUSES = {
 export const orders = pgTable('orders', {
   id: id,
   orderNumber: text('order_number').notNull().unique(),
+  stripeSessionId: text('stripe_session_id'),
   status: orderStatusEnum('status').default('pending').notNull(),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
   confirmationToken: uuid('confirmation_token').notNull().defaultRandom(),

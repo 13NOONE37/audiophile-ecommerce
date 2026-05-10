@@ -68,6 +68,11 @@ export async function initializePayment(
       cancel_url: `${appUrl}/checkout/order-confirmation/${order.confirmationToken}`, //TODO: maybe page where user can cancel this order
     });
 
+    await db
+      .update(orders)
+      .set({ stripeSessionId: session.id })
+      .where(eq(orders.id, orderId));
+
     if (!session.url)
       return err('Could not process payment', ErrorCode.UNEXPECTED);
 

@@ -9,7 +9,7 @@ export function QuantitySelectInput({
   setValue,
   allowZero = false,
   disabled = false,
-  max = 5,
+  max,
   className,
 }: {
   value: number;
@@ -34,7 +34,7 @@ export function QuantitySelectInput({
   };
   const handleIncrease = () => {
     const next = value + 1;
-    if (next > max) {
+    if (max && next > max) {
       toast('Quantity exceeds maximum', {
         description: `The maximum allowed quantity is ${max}.`,
       });
@@ -58,7 +58,7 @@ export function QuantitySelectInput({
       inputValue === '' ||
       isNaN(parsed) ||
       parsed < (allowZero ? 0 : 1) ||
-      parsed > max
+      (max && parsed > max)
     ) {
       setInputValue(String(value));
     } else {
