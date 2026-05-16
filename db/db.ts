@@ -22,6 +22,9 @@ const pool = new Pool({
   connectionString: env.DB_URL,
 
   ssl: buildSslConfig(),
+  // process.env.NODE_ENV === 'production'
+  //   ? { rejectUnauthorized: true }
+  //   : false,
 });
 
 export const db = drizzle(pool, { schema });
