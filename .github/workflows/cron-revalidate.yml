@@ -1,0 +1,26 @@
+# .github/workflows/cron-revalidate.yml
+name: Weekly Revalidate
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # każdy poniedziałek o 9:00 UTC
+  workflow_dispatch: # możliwość ręcznego uruchomienia
+
+jobs:
+  revalidate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping revalidate endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/revalidate")
+
+          echo "Response status: $response"
+
+          if [ "$response" != "200" ]; then
+            echo "Revalidation failed with status $response"
+            exit 1
+          fi
+
+          echo "Revalidation successful"
