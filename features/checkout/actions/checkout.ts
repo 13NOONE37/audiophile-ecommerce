@@ -18,21 +18,42 @@ import {
 } from '@/features/cart/lib/errors/domainErrors';
 import { getCartId } from '@/features/cart/lib/cartCookie';
 
-import { findCartWithItems, removeCartItem } from '@/features/cart/db/carts';
+import {
+  findCartWithItems,
+  removeCartItem,
+  updateCartItemQuantity,
+} from '@/features/cart/db/carts';
 import { revalidateTag } from 'next/cache';
 import { getCartIdTag } from '@/features/cart/db/cache';
-import { updateQuantity } from '@/features/cart/actions/carts';
 import { cookies } from 'next/headers';
-import ADJUSTMENT_COOKIE_NAME, { generateOrderNumber } from '../lib/checkout';
+import ADJUSTMENT_COOKIE_NAME from '../lib/checkout';
 import { db } from '@/db/db';
-import { carts, orderItems, orders, productVariants } from '@/db/schema';
+import {
+  cartItems,
+  carts,
+  orderItems,
+  orders,
+  productVariants,
+} from '@/db/schema';
 import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import { checkoutSchema } from '../schema/checkout';
 import { env } from '@/data/env/server';
+import { request } from '@arcjet/next';
+import { ajCheckout } from '@/lib/arcjet/arcjet';
 
 export async function validateAndAdjustCart(): Promise<
   ActionResult<StockValidationResult>
 > {
+  const req = await request();
+  const decision = await ajCheckout.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return err('Too many attempts, wait a moment', ErrorCode.UNEXPECTED);
+    }
+    return err('Request blocked', ErrorCode.UNEXPECTED);
+  }
+
   try {
     const cartId = await getCartId();
     if (!cartId) return err('Cart not found', ErrorCode.CART_NOT_FOUND);
@@ -44,31 +65,69 @@ export async function validateAndAdjustCart(): Promise<
     const adjustedItems: AdjustedItem[] = [];
 
     //check every item
-    await Promise.all(
-      cart.items.map(async (item) => {
-        const currentStock = item.variant.stock;
+    await db.transaction(async (tx) => {
+      const variantIds = cart.items.map((item) => item.variantId);
 
-        if (currentStock === 0) {
-          //Unavaible - delete item
-          await removeCartItem(item.cartId, item.id);
+      const freshVariants = await tx
+        .select({
+          id: productVariants.id,
+          stock: productVariants.stock,
+        })
+        .from(productVariants)
+        .where(inArray(productVariants.id, variantIds))
+        .for('update');
+      // We take fresh because cart may be older if e.g. we are waiting for our transaction; and by .for('update') we are blocking it for whole transaction
+
+      for (const item of cart.items) {
+        const variant = freshVariants.find((v) => v.id === item.variantId);
+
+        if (!variant) {
+          await tx
+            .delete(cartItems)
+            .where(
+              and(eq(cartItems.cartId, cart.id), eq(cartItems.id, item.id)),
+            );
+
           adjustedItems.push({
             name: item.variant.product.short_name ?? item.variant.product.name,
             availableQty: 0,
             requestedQty: item.quantity,
           });
-        } else if (item.quantity > currentStock) {
-          //Too much - adjust quantity
-          const updatedQuantity = currentStock;
+          continue;
+        }
 
-          await updateQuantity(item.id, updatedQuantity);
+        if (variant.stock === 0) {
+          await tx
+            .delete(cartItems)
+            .where(
+              and(eq(cartItems.cartId, cart.id), eq(cartItems.id, item.id)),
+            );
+
           adjustedItems.push({
             name: item.variant.product.short_name ?? item.variant.product.name,
-            availableQty: updatedQuantity,
+            availableQty: 0,
+            requestedQty: item.quantity,
+          });
+
+          continue;
+        }
+
+        if (item.quantity > variant.stock) {
+          await tx
+            .update(cartItems)
+            .set({ quantity: variant.stock })
+            .where(
+              and(eq(cartItems.cartId, cart.id), eq(cartItems.id, item.id)),
+            );
+
+          adjustedItems.push({
+            name: item.variant.product.short_name ?? item.variant.product.name,
+            availableQty: variant.stock,
             requestedQty: item.quantity,
           });
         }
-      }),
-    );
+      }
+    });
 
     if (adjustedItems.length > 0) {
       // We are saving adjustedItems to cookie to show the banner on the checkout page.
@@ -92,6 +151,16 @@ export async function validateAndAdjustCart(): Promise<
 export async function placeOrder(
   formData: unknown,
 ): Promise<ActionResult<PlaceOrderResult>> {
+  const req = await request();
+  const decision = await ajCheckout.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    if (decision.reason.isRateLimit()) {
+      return err('Too many attempts, wait a moment', ErrorCode.UNEXPECTED);
+    }
+    return err('Request blocked', ErrorCode.UNEXPECTED);
+  }
+
   const parsed = checkoutSchema.safeParse(formData);
   if (!parsed.success) {
     return err(
@@ -155,7 +224,6 @@ export async function placeOrder(
         .insert(orders)
         .values({
           status: 'pending',
-          orderNumber: generateOrderNumber(),
           totalAmount: String(
             cart.items.reduce(
               (sum, item) => sum + Number(item.variant.price) * item.quantity,
@@ -165,15 +233,13 @@ export async function placeOrder(
           confirmationTokenExpiresAt: new Date(
             Date.now() + 60 * 60 * 24 * 14 * 1000,
           ), //2 weeks
-          firstName: parsed.data.name,
-          lastName: parsed.data.name,
+          name: parsed.data.name,
           email: parsed.data.email,
           phone: parsed.data.phone,
+          address: parsed.data.address,
+          zip: parsed.data.zip,
           city: parsed.data.city,
           country: parsed.data.country,
-          zip: parsed.data.zip,
-          houseNumber: '0',
-          street: parsed.data.address,
         })
         .returning();
 

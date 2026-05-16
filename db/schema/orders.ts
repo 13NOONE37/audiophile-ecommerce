@@ -1,8 +1,23 @@
-import { numeric, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import {
+  numeric,
+  pgEnum,
+  pgSequence,
+  pgTable,
+  text,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { createdAt, id } from '../schemaHelpers';
-import { relations } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { orderItems } from './orderItems';
 import { timestamp } from 'drizzle-orm/pg-core';
+
+export const ORDER_STATUSES = {
+  PENDING: 'pending',
+  PAID: 'paid',
+  FAILED: 'failed',
+  SHIPPED: 'shipped',
+  CANCELLED: 'cancelled',
+} as const;
 
 const orderStatusEnum = pgEnum('order_status', [
   'pending',
@@ -11,16 +26,14 @@ const orderStatusEnum = pgEnum('order_status', [
   'shipped',
   'cancelled',
 ]);
-export const ORDER_STATUSES = {
-  PENDING: 'pending',
-  PAID: 'paid',
-  FAILED: 'failed',
-  SHIPPED: 'shipped',
-  CANCELLED: 'cancelled',
-} as const;
+export const orderSeq = pgSequence('order_seq');
+
 export const orders = pgTable('orders', {
   id: id,
-  orderNumber: text('order_number').notNull().unique(),
+  orderNumber: text('order_number').notNull().unique().default(sql`
+    'ORD-' ||
+    lpad(nextval('order_seq')::text, 6, '0')
+  `),
   stripeSessionId: text('stripe_session_id'),
   status: orderStatusEnum('status').default('pending').notNull(),
   totalAmount: numeric('total_amount', { precision: 10, scale: 2 }).notNull(),
@@ -29,21 +42,16 @@ export const orders = pgTable('orders', {
     withTimezone: true,
   })
     .notNull()
-    .default(new Date(Date.now() + 60 * 60 * 24 * 14 * 1000)), //2 weeks
+    .default(sql`now() + interval '2 days'`), //2 days
 
   // Delivery info
+  name: text('name').notNull(),
   email: text('email').notNull(),
-  firstName: text('first_name').notNull(),
-  lastName: text('last_name').notNull(),
   phone: text('phone').notNull(),
-  street: text('street').notNull(),
-  houseNumber: text('house_number').notNull(),
-  apartmentNumber: text('apartment_number'),
+  address: text('address').notNull(),
   zip: text('zip').notNull(),
   city: text('city').notNull(),
-  region: text('region'),
   country: text('country').default('Polska').notNull(),
-  notes: text('notes'),
 
   createdAt: createdAt,
 });

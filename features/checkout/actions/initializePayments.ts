@@ -9,12 +9,21 @@ import {
   ErrorCode,
   ok,
 } from '@/features/cart/lib/types/actionResults';
+import { ajPayment } from '@/lib/arcjet/arcjet';
 import { stripe } from '@/lib/stripe/stripe';
+import { request } from '@arcjet/next';
 import { eq } from 'drizzle-orm';
 
 export async function initializePayment(
   orderId: string,
 ): Promise<ActionResult<{ url: string }>> {
+  const req = await request();
+  const decision = await ajPayment.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    return err('Too many requests', ErrorCode.UNEXPECTED);
+  }
+
   try {
     const order = await db.query.orders.findFirst({
       where: eq(orders.id, orderId),

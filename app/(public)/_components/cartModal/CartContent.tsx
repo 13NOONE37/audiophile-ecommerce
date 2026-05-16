@@ -5,27 +5,18 @@ import { formatPrice } from '@/lib/formatters';
 import { ProductImage } from '@/components/ProductImage';
 import { LinkButton } from '@/components/button';
 import { CartItemQuantityControl } from './CartItemQuantityControl';
-import { useEffect, useOptimistic, useState, useTransition } from 'react';
+import { useOptimistic, useTransition } from 'react';
 
 import { cartReducer } from '@/features/cart/lib/cartReducer';
 import { Cart } from '@/features/cart/lib/types/cart';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
-export function CartContent({ cart }: { cart: Cart | null }) {
-  if (!cart) {
-    return <div className='w-full text-center py-8'>Cart does not exist</div>;
-  }
-  const [optimisticCart, dispatch] = useOptimistic(cart, cartReducer);
+export function useCart(cart: Cart) {
   const [isPending, startTransition] = useTransition();
+  const [optimisticCart, dispatch] = useOptimistic(cart, cartReducer);
 
-  const itemCount = optimisticCart.items.reduce(
-    (sum, item) => sum + item.quantity,
-    0,
-  );
-  const totalPrice = optimisticCart.items.reduce(
-    (sum, item) => sum + Number(item.variant.price) * item.quantity,
-    0,
-  );
+  const router = useRouter();
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     startTransition(async () => {
@@ -38,6 +29,8 @@ export function CartContent({ cart }: { cart: Cart | null }) {
       const result = await updateQuantity(itemId, quantity);
 
       if (!result.success) toast.error(result.error);
+
+      router.refresh();
     });
   };
 
@@ -47,8 +40,36 @@ export function CartContent({ cart }: { cart: Cart | null }) {
       const result = await clearCartItems();
 
       if (!result.success) toast.error(result.error);
+      router.refresh();
     });
   };
+
+  return {
+    optimisticCart,
+    isPending,
+    handleUpdateQuantity,
+    handleClearCartItems,
+  };
+}
+export function CartContent({ cart }: { cart: Cart | null }) {
+  if (!cart) {
+    return <div className='w-full text-center py-8'>Your cart is empty</div>;
+  }
+
+  const {
+    optimisticCart,
+    isPending,
+    handleUpdateQuantity,
+    handleClearCartItems,
+  } = useCart(cart);
+  const itemCount = optimisticCart.items.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const totalPrice = optimisticCart.items.reduce(
+    (sum, item) => sum + Number(item.variant.price) * item.quantity,
+    0,
+  );
 
   return (
     <div className='px-3 py-8 xs:px-8 h-full flex flex-col'>
@@ -93,6 +114,7 @@ export function CartContent({ cart }: { cart: Cart | null }) {
                     onQuantityChange={(qty) =>
                       handleUpdateQuantity(item.id, qty)
                     }
+                    max={item.variant.stock}
                     disabled={false}
                   />
                 </div>

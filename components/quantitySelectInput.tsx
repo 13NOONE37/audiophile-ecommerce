@@ -48,22 +48,22 @@ export function QuantitySelectInput({
   const debouncedUpdate = useDebouncedCallback((qty: number) => {
     setValue(qty);
   }, 500);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
     setInputValue(raw);
+    const parsed = Number(raw);
 
-    const parsed = Number(inputValue);
     if (
-      inputValue === '' ||
+      !raw ||
       isNaN(parsed) ||
       parsed < (allowZero ? 0 : 1) ||
       (max && parsed > max)
     ) {
       setInputValue(String(value));
-    } else {
-      debouncedUpdate(parsed);
+      return;
     }
+
+    debouncedUpdate(parsed);
   };
 
   return (

@@ -9,9 +9,10 @@ export const orderItems = pgTable('order_items', {
   orderId: uuid('order_id')
     .notNull()
     .references(() => orders.id, { onDelete: 'cascade' }),
-  variantIdSnapshot: uuid('variant_id_snapshot')
-    .references(() => productVariants.id, { onDelete: 'set null' })
-    .notNull(),
+  variantIdSnapshot: uuid('variant_id_snapshot').references(
+    () => productVariants.id,
+    { onDelete: 'set null' },
+  ),
   productNameSnapshot: text('product_name_snapshot').notNull(),
   skuSnapshot: text('sku_snapshot').notNull(),
   priceSnapshot: numeric('price_snapshot', {

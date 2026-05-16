@@ -23,5 +23,5 @@ export function UseDetectOutsideClick(
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('touchstart', handlePointerDown);
     };
-  }, [ref, onOutsideClick]);
+  }, [ref, onOutsideClick, excludeRefs]);
 }

@@ -7,10 +7,12 @@ export function CartItemQuantityControl({
   item,
   onQuantityChange,
   disabled,
+  max,
 }: {
   item: CartItems[number];
   onQuantityChange: (qty: number) => void;
   disabled: boolean;
+  max?: number;
 }) {
   return (
     <QuantitySelectInput
@@ -22,6 +24,7 @@ export function CartItemQuantityControl({
       }}
       disabled={disabled}
       allowZero
+      max={max}
       className='h-8 w-24'
     />
   );

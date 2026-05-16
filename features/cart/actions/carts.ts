@@ -18,11 +18,20 @@ import {
 import { addToCartSchema, updateQuantitySchema } from '../schemas/carts';
 import { getCartIdTag } from '../db/cache';
 import { DomainError } from '../lib/errors/domainErrors';
-//TODO: update functions to take cartId as parameter
+import { request } from '@arcjet/next';
+import { ajCart } from '@/lib/arcjet/arcjet';
+
 export async function addToCart(
   variantId: string,
   quantity = 1,
 ): Promise<ActionResult<void>> {
+  const req = await request();
+  const decision = await ajCart.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    return err('Too many requests', ErrorCode.UNEXPECTED);
+  }
+
   const parsed = addToCartSchema.safeParse({ variantId, quantity });
   if (!parsed.success) {
     return err(
@@ -51,6 +60,13 @@ export async function updateQuantity(
   cartItemId: string,
   quantity: number,
 ): Promise<ActionResult<void>> {
+  const req = await request();
+  const decision = await ajCart.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    return err('Too many requests', ErrorCode.UNEXPECTED);
+  }
+
   const parsed = updateQuantitySchema.safeParse({ cartItemId, quantity });
   if (!parsed.success) {
     return err(
@@ -80,6 +96,13 @@ export async function updateQuantity(
   }
 }
 export async function clearCartItems(): Promise<ActionResult<void>> {
+  const req = await request();
+  const decision = await ajCart.protect(req, { requested: 1 });
+
+  if (decision.isDenied()) {
+    return err('Too many requests', ErrorCode.UNEXPECTED);
+  }
+
   try {
     const cartId = await getOrCreateCartId();
     const cart = await getOrCreateCart(cartId);

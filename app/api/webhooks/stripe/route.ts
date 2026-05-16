@@ -1,6 +1,7 @@
 import { env } from '@/data/env/server';
 import { db } from '@/db/db';
 import { orders, productVariants } from '@/db/schema';
+
 import { sendOrderConfirmationEmail } from '@/lib/resend/email';
 import { stripe } from '@/lib/stripe/stripe';
 import { eq, sql } from 'drizzle-orm';
@@ -15,7 +16,7 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(
       body,
       signature!,
-      env.STRIPE_WEBHOOK_KEY!,
+      env.STRIPE_WEBHOOK_KEY,
     );
   } catch (error) {
     console.error('[Stripe webhook] Invalid signature', error);
@@ -78,8 +79,13 @@ export async function POST(req: Request) {
         if (!order || order.status !== 'pending') break;
 
         await db.transaction(async (tx) => {
+          const itemsWithVariantIds = order.items.filter(
+            (item): item is typeof item & { variantIdSnapshot: string } =>
+              item.variantIdSnapshot !== null,
+          );
+
           await Promise.all(
-            order.items.map((item) =>
+            itemsWithVariantIds.map((item) =>
               tx
                 .update(productVariants)
                 .set({ stock: sql`stock + ${item.quantity}` })
@@ -97,7 +103,6 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     console.error('[stripe webhook]', error);
-    // Zwróć 200 żeby Stripe nie ponawiał — loguj błąd osobno
   }
-  return new Response('OK', { status: 200 });
+  return new Response('OK', { status: 200 }); // Respond here with 200 so stripe doesn't retry; even if catch occurs
 }

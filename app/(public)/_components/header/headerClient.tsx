@@ -9,9 +9,7 @@ import Categories from '../categories';
 import { cn } from '@/lib/utils';
 import { UseDetectOutsideClick } from '@/hooks/UseDetectOutsideClick';
 import { FocusTrap } from 'focus-trap-react';
-import CartModal from '../cartModal/cartModal';
 import { blockBodyScroll, enableBodyScroll } from '@/lib/bodyScroll';
-import { Cart } from '@/features/cart/lib/types/cart';
 
 export default function HeaderClient({
   className,
@@ -21,34 +19,35 @@ export default function HeaderClient({
   children?: React.ReactNode;
 }) {
   // Menu handling
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLElement | null>(null);
-  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
-  UseDetectOutsideClick(menuRef, () => setIsMenuOpen(false), [hamburgerRef]);
+  const [openPanel, setOpenPanel] = useState<'menu' | 'cart' | null>(null);
+
+  const isMenuOpen = openPanel === 'menu';
+  const isCartOpen = openPanel === 'cart';
+
   useEffect(() => {
-    if (isMenuOpen) blockBodyScroll();
-    else {
+    if (openPanel !== null) {
+      blockBodyScroll();
+    } else {
       enableBodyScroll();
     }
 
-    return () => {
-      enableBodyScroll();
-    };
-  }, [isMenuOpen]);
+    return () => enableBodyScroll();
+  }, [openPanel]);
 
-  // Cart handling
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const menuRef = useRef<HTMLElement | null>(null);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+
   const cartRef = useRef<HTMLDivElement | null>(null);
   const cartButtonRef = useRef<HTMLButtonElement | null>(null);
-  UseDetectOutsideClick(cartRef, () => setIsCartOpen(false), [cartButtonRef]);
-  useEffect(() => {
-    if (isCartOpen) blockBodyScroll();
-    else enableBodyScroll();
 
-    return () => {
-      enableBodyScroll();
-    };
-  }, [isCartOpen]);
+  UseDetectOutsideClick(menuRef, () => setOpenPanel(null), [
+    hamburgerRef,
+    cartRef,
+  ]);
+  UseDetectOutsideClick(cartRef, () => setOpenPanel(null), [
+    cartButtonRef,
+    menuRef,
+  ]);
 
   return (
     <>
@@ -65,10 +64,11 @@ export default function HeaderClient({
             <div className='page-max-width md:px-0 grid grid-cols-[auto_1fr_auto] place-items-center py-8 relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-px before:bg-body-inverted before:opacity-20'>
               <button
                 className='cursor-pointer lg:hidden'
-                aria-label={'Open navigation'}
+                aria-label={
+                  openPanel === 'menu' ? 'Close navigation' : 'Open navigation'
+                }
                 onClick={() => {
-                  setIsMenuOpen((prev) => !prev);
-                  setIsCartOpen(false);
+                  setOpenPanel((prev) => (prev === 'menu' ? null : 'menu'));
                 }}
                 ref={hamburgerRef}
               >
@@ -115,17 +115,11 @@ export default function HeaderClient({
                 </ul>
               </nav>
               <div className='grid place-items-center'>
-                {/*TODO: {cart.items.length > 0 ? (
-              <span className={styles.cartCount}>{cart.items.length}</span>
-            ) : (
-              ''
-            )} */}
                 <button
                   className='cursor-pointer'
-                  aria-label={'Open cart'}
+                  aria-label={openPanel === 'cart' ? 'Close cart' : 'Open cart'}
                   onClick={() => {
-                    setIsCartOpen((prev) => !prev);
-                    setIsMenuOpen(false);
+                    setOpenPanel((prev) => (prev === 'cart' ? null : 'cart'));
                   }}
                   ref={cartButtonRef}
                 >
@@ -144,7 +138,7 @@ export default function HeaderClient({
             <nav ref={menuRef}>
               <Categories
                 className='px-6 md:px-9.5 pt-21 md:pt-27 pb-9 md:pb-17'
-                onLinkClick={() => setIsMenuOpen(false)}
+                onLinkClick={() => setOpenPanel(null)}
               />
             </nav>
           </div>

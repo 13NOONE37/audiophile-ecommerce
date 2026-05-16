@@ -3,7 +3,6 @@
 import { Button } from '@/components/button';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { QuantitySelectInput } from '@/components/quantitySelectInput';
-import { env } from '@/data/env/client';
 import { addToCart } from '@/features/cart/actions/carts';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -20,6 +19,7 @@ export function CartManagment({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
+  //TODO we should implement back max_items per order. Not only here but in actions,checkout and cart also
   return (
     <div className='min-h-14.5 md:h-14.5 flex flex-row justify-start gap-4 mt-8 lg:mt-12'>
       <QuantitySelectInput
