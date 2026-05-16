@@ -231,8 +231,8 @@ export async function placeOrder(
             ) + Number(env.SHIPPING_COST),
           ),
           confirmationTokenExpiresAt: new Date(
-            Date.now() + 60 * 60 * 24 * 14 * 1000,
-          ), //2 weeks
+            Date.now() + 60 * 60 * 24 * 2 * 1000,
+          ), //2 days
           name: parsed.data.name,
           email: parsed.data.email,
           phone: parsed.data.phone,

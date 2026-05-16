@@ -11,6 +11,14 @@ import { notFound } from 'next/navigation';
 
 import { toast } from 'sonner';
 import { RetryPaymentButton } from './_components/RetryPaymentButton';
+import { Metadata } from 'next';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    referrer: 'no-referrer',
+    robots: { index: false, follow: false },
+  };
+}
 
 export default async function OrderConfirmationPage({
   params,
@@ -58,7 +66,11 @@ export default async function OrderConfirmationPage({
         </span>
       </div>
       {order.status === 'pending' && (
-        <RetryPaymentButton orderId={order.id} className='mt-2' />
+        <RetryPaymentButton
+          orderId={order.id}
+          confirmationToken={order.confirmationToken}
+          className='mt-2'
+        />
       )}
 
       <div className='mt-6 rounded-lg overflow-hidden flex flex-col md:flex-row'>

@@ -7,9 +7,11 @@ import { toast } from 'sonner';
 
 export function RetryPaymentButton({
   orderId,
+  confirmationToken,
   className = '',
 }: {
   orderId: string;
+  confirmationToken: string;
   className?: string;
 }) {
   const [isPending, startTransition] = useTransition();
@@ -17,7 +19,7 @@ export function RetryPaymentButton({
 
   const handleRetry = () => {
     startTransition(async () => {
-      const result = await initializePayment(orderId);
+      const result = await initializePayment(orderId, confirmationToken);
 
       if (!result.success) {
         toast.error(result.error);

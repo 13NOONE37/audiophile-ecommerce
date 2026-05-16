@@ -96,7 +96,10 @@ export default function CheckoutPage({ cart }: { cart: Cart }) {
     }
 
     //Initialize payment
-    const paymentResult = await initializePayment(orderResult.data.orderId);
+    const paymentResult = await initializePayment(
+      orderResult.data.orderId,
+      orderResult.data.confirmationToken,
+    );
     if (!paymentResult.success) {
       toast.error(paymentResult.error);
       router.push(

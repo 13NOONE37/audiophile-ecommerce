@@ -12,10 +12,11 @@ import {
 import { ajPayment } from '@/lib/arcjet/arcjet';
 import { stripe } from '@/lib/stripe/stripe';
 import { request } from '@arcjet/next';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 
 export async function initializePayment(
   orderId: string,
+  confirmationToken: string,
 ): Promise<ActionResult<{ url: string }>> {
   const req = await request();
   const decision = await ajPayment.protect(req, { requested: 1 });
@@ -26,7 +27,12 @@ export async function initializePayment(
 
   try {
     const order = await db.query.orders.findFirst({
-      where: eq(orders.id, orderId),
+      where: and(
+        eq(orders.id, orderId),
+
+        eq(orders.confirmationToken, confirmationToken),
+        gt(orders.confirmationTokenExpiresAt, new Date()),
+      ),
       with: {
         items: true,
       },

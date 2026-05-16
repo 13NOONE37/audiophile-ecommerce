@@ -12,6 +12,7 @@ export const ajCheckout = arcjet({
   characteristics: ['ip.src'],
   rules: [
     shield({ mode: 'LIVE' }),
+    detectBot({ mode: 'LIVE', allow: ['CATEGORY:SEARCH_ENGINE'] }),
     tokenBucket({
       mode: 'LIVE',
       refillRate: 2,
@@ -26,6 +27,7 @@ export const ajCart = arcjet({
   characteristics: ['ip.src'],
   rules: [
     shield({ mode: 'LIVE' }),
+    detectBot({ mode: 'LIVE', allow: ['CATEGORY:SEARCH_ENGINE'] }),
     tokenBucket({
       mode: 'LIVE',
       refillRate: 20,
@@ -40,6 +42,7 @@ export const ajPayment = arcjet({
   characteristics: ['ip.src'],
   rules: [
     shield({ mode: 'LIVE' }),
+    detectBot({ mode: 'LIVE', allow: ['CATEGORY:SEARCH_ENGINE'] }),
     tokenBucket({
       mode: 'LIVE',
       refillRate: 1,
