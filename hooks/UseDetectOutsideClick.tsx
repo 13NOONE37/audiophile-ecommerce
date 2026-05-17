@@ -6,22 +6,20 @@ export function UseDetectOutsideClick(
   excludeRefs: RefObject<HTMLElement | null>[] = [],
 ) {
   useEffect(() => {
-    function handlePointerDown(e: MouseEvent | TouchEvent) {
+    function handleDocumentClick(e: MouseEvent) {
+      const target = e.target as Node;
       if (!ref.current) return;
-
-      for (const ref of excludeRefs) {
-        if (ref.current?.contains(e.target as Node)) return;
+      for (const exRef of excludeRefs) {
+        if (exRef.current?.contains(target)) return;
       }
 
-      if (!ref.current.contains(e.target as Node)) onOutsideClick();
+      if (!ref.current.contains(target)) onOutsideClick();
     }
 
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('touchstart', handlePointerDown);
+    document.addEventListener('click', handleDocumentClick);
 
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('touchstart', handlePointerDown);
+      document.removeEventListener('click', handleDocumentClick);
     };
   }, [ref, onOutsideClick, excludeRefs]);
 }

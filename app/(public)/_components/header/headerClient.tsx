@@ -35,13 +35,13 @@ export default function HeaderClient({
   }, [openPanel]);
 
   const menuRef = useRef<HTMLElement | null>(null);
-  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const cartRef = useRef<HTMLDivElement | null>(null);
   const cartButtonRef = useRef<HTMLButtonElement | null>(null);
 
   UseDetectOutsideClick(menuRef, () => setOpenPanel(null), [
-    hamburgerRef,
+    menuButtonRef,
     cartRef,
   ]);
   UseDetectOutsideClick(cartRef, () => setOpenPanel(null), [
@@ -70,7 +70,7 @@ export default function HeaderClient({
                 onClick={() => {
                   setOpenPanel((prev) => (prev === 'menu' ? null : 'menu'));
                 }}
-                ref={hamburgerRef}
+                ref={menuButtonRef}
               >
                 <IconHamburger className='fill-body-inverted' />
               </button>

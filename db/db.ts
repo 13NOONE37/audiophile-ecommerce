@@ -4,8 +4,7 @@ import * as schema from './schema';
 import { env } from '@/data/env/server';
 
 function buildSslConfig() {
-  if (process.env.NODE_ENV !== 'production') return false;
-
+  // if (process.env.NODE_ENV !== 'production') return false; //Comment if you want to connect without CA, but you have to also disable SSL in supabase
   if (!env.DB_SSL_CA) return { rejectUnauthorized: true };
 
   const ca = env.DB_SSL_CA.includes('-----BEGIN')
