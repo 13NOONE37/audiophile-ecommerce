@@ -22,7 +22,7 @@ export function YouMayAlsoLike({
         {recommendations.map((rec) => (
           <li key={rec.recommended.id} className='flex flex-col items-center'>
             <div
-              className='flex justify-center
+              className='relative flex justify-center
               bg-surface-card
               aspect-[2.725/1] md:aspect-[1/1.426] lg:aspect-[1.10/1] 
               rounded-[8px] overflow-hidden'
@@ -30,7 +30,8 @@ export function YouMayAlsoLike({
               <ProductImage
                 product={rec.recommended}
                 role='preview'
-                className='object-contain h-full w-auto'
+                fill
+                className='object-contain'
               />
             </div>
             <span className='heading-5 text-body uppercase mt-7.5 md:mt-10'>
