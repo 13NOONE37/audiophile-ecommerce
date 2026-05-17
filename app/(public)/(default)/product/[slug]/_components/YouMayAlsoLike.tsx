@@ -22,16 +22,15 @@ export function YouMayAlsoLike({
         {recommendations.map((rec) => (
           <li key={rec.recommended.id} className='flex flex-col items-center'>
             <div
-              className='relative flex justify-center
+              className='flex justify-center
               bg-surface-card
               aspect-[2.725/1] md:aspect-[1/1.426] lg:aspect-[1.10/1] 
-              rounded-[8px] overflow-hidden'
+              rounded-[8px] overflow-hidden w-full'
             >
               <ProductImage
                 product={rec.recommended}
                 role='preview'
-                fill
-                className='object-contain'
+                className='object-contain h-full w-auto'
               />
             </div>
             <span className='heading-5 text-body uppercase mt-7.5 md:mt-10'>
